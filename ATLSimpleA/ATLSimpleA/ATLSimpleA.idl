@@ -1,0 +1,38 @@
+// ATLSimpleA.idl : IDL source for ATLSimpleA
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ATLSimpleA.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(D9F8844F-DE89-46F5-A489-4E9801BA5390),
+	dual,
+	nonextensible,
+	helpstring("IAdd Interface"),
+	pointer_default(unique)
+]
+interface IAdd : IDispatch{
+	[id(136), helpstring("method Add_I")] HRESULT Add_I([in] LONG paraA, [in] LONG paraB, [out] LONG* result);
+	[id(137), helpstring("method CatBSTR")] HRESULT CatBSTR([in] BSTR paraA, [in] BSTR paraB, [out] BSTR* result);
+};
+[
+	uuid(E5D93487-D442-4B2A-8A66-3D18B0F21F95),
+	version(1.0),
+	helpstring("ATLSimpleA 1.0 Type Library")
+]
+library ATLSimpleALib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(0990362A-100A-4B26-82CF-3D38095AC1A6),
+		helpstring("Add Class")
+	]
+	coclass Add
+	{
+		[default] interface IAdd;
+	};
+};

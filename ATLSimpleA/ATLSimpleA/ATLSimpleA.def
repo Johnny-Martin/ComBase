@@ -1,0 +1,10 @@
+; ATLSimpleA.def : Declares the module parameters.
+
+LIBRARY      "ATLSimpleA.DLL"
+
+EXPORTS
+	DllCanUnloadNow		PRIVATE
+	DllGetClassObject	PRIVATE
+	DllRegisterServer	PRIVATE
+	DllUnregisterServer	PRIVATE
+	DllInstall		PRIVATE

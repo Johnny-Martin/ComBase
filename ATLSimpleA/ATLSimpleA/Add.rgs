@@ -1,0 +1,26 @@
+HKCR
+{
+	ATLSimpleA.Add.1 = s 'Add Class'
+	{
+		CLSID = s '{0990362A-100A-4B26-82CF-3D38095AC1A6}'
+	}
+	ATLSimpleA.Add = s 'Add Class'
+	{
+		CLSID = s '{0990362A-100A-4B26-82CF-3D38095AC1A6}'
+		CurVer = s 'ATLSimpleA.Add.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {0990362A-100A-4B26-82CF-3D38095AC1A6} = s 'Add Class'
+		{
+			ProgID = s 'ATLSimpleA.Add.1'
+			VersionIndependentProgID = s 'ATLSimpleA.Add'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{E5D93487-D442-4B2A-8A66-3D18B0F21F95}'
+		}
+	}
+}
