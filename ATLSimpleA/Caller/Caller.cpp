@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "template.h"
 #include <vector>
 #include <iostream>
 #include "..\ATLSimpleA\ATLSimpleA_i.h"
@@ -76,8 +77,20 @@ void PrintLink(Node* pLink)
 	}
 	cout<<endl;
 }
+union {
+	char a;
+	unsigned int i;
+}u;
 int _tmain(int argc, _TCHAR* argv[])
 {
+	Drive d1;
+	d1.Print();
+
+	Drive2 d2;
+	d2.Print();
+	/*u.i = 0xf0f1f2f3;
+	cout<<hex<<u.i<<endl;
+	cout<<hex<<(int)u.a<<endl;
 	Node* pLinkA = CreateOrderedNode(10, 1);
 	PrintLink(pLinkA);
 
@@ -85,7 +98,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	PrintLink(pLinkB);
 
 	Node* pNewHead = Merge(pLinkA, pLinkB);
-	PrintLink(pNewHead);
+	PrintLink(pNewHead);*/
 
 	//::CoInitialize( NULL );
 	////CComPtr<IUnknown> spUnknown;
