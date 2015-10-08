@@ -7,7 +7,7 @@
 #include <iostream>
 #include "..\ATLSimpleA\ATLSimpleA_i.h"
 #include "..\ATLSimpleA\ATLSimpleA_i.c"
-
+#include <windows.h>
 using namespace std;
 struct Node
 {
@@ -81,13 +81,63 @@ union {
 	char a;
 	unsigned int i;
 }u;
+
+int g_i = 10;  //一个全局变量
+CRITICAL_SECTION cs;  //一个临界区变量
+DWORD WINAPI ThreadProc(LPVOID lpv)
+{
+	::EnterCriticalSection(&cs);
+	g_i += 10;
+	std::cout <<"In the Thread " << ::GetCurrentThreadId() << ",the first g_i is "  <<  g_i  <<  "!"  << std::endl;
+	
+	::LeaveCriticalSection(&cs);
+
+	Sleep(5000); //睡眠
+	
+	::EnterCriticalSection(&cs);
+	g_i += 10;
+	std::cout <<"In the Thread " << ::GetCurrentThreadId() << ",the secend g_i is "  <<  g_i  << "!" << std::endl;
+	::LeaveCriticalSection(&cs);
+
+	return 0;
+	
+}
+
+void CreateMyThread()
+{
+	DWORD threadID[2];
+	HANDLE hThreads[2];
+	InitializeCriticalSection(&cs);
+
+	for(int i = 0; i <= 1; i++ )         //创建两个线程
+		hThreads[i] = ::CreateThread(NULL, 0,ThreadProc,NULL, 0, &threadID[i]);
+
+	WaitForMultipleObjects(2,hThreads,TRUE,INFINITE);   //等待线程结束
+
+	for(int i = 0; i <= 1; i++ )
+		::CloseHandle(hThreads[i]);             //关闭线程句柄
+	system("pause");
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Drive d1;
-	d1.Print();
+	DirveClass D1;
+	BaseClass B1 = D1;
 
-	Drive2 d2;
-	d2.Print();
+	BaseClass &B2 = D1;
+	BaseClass *B3 = &D1;
+
+	B1.VFun();
+	B2.VFun();
+	B3->VFun();
+	//BaseClass * pB;
+	//CreateMyThread();
+
+// 	Drive d1;
+// 	d1.Print();
+// 
+// 	Drive2 d2;
+// 	d2.Print();
 	/*u.i = 0xf0f1f2f3;
 	cout<<hex<<u.i<<endl;
 	cout<<hex<<(int)u.a<<endl;

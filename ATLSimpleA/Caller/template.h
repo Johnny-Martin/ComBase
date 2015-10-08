@@ -16,7 +16,7 @@ public:
 	void Print()
 	{
 		static_cast<T*>(this)->m_print();
-		CComObject objA;
+		//CComObject objA;
 	}
 
 };
@@ -32,4 +32,21 @@ public:
 class Drive2: public Base<Drive2>
 {
 public:
+};
+
+class BaseClass
+{
+public:
+	virtual void VFun()
+	{
+		cout<<"BaseClass VFun"<<endl;
+	}
+};
+class DirveClass: public BaseClass
+{
+public:
+	virtual void VFun()
+	{
+		cout<<"DirveClass VFun"<<endl;
+	}
 };
