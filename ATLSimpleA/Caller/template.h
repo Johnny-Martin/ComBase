@@ -50,3 +50,17 @@ public:
 		cout<<"DirveClass VFun"<<endl;
 	}
 };
+class FinalClass
+{
+private:
+	FinalClass()
+	{
+		cout<<"FinalClass";
+	}
+};
+
+class  TryClass//: public FinalClass
+{
+public:
+	int a;
+};
