@@ -8,6 +8,7 @@
 #include "..\ATLSimpleA\ATLSimpleA_i.h"
 #include "..\ATLSimpleA\ATLSimpleA_i.c"
 #include <windows.h>
+#include "lua_and_c.h"
 using namespace std;
 struct Node
 {
@@ -119,9 +120,11 @@ void CreateMyThread()
 	system("pause");
 }
 
+extern "C" int CCallLua ();
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DirveClass D1;
+	CCallLua ();
+	/*DirveClass D1;
 	BaseClass B1 = D1;
 
 	BaseClass &B2 = D1;
@@ -130,6 +133,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	B1.VFun();
 	B2.VFun();
 	B3->VFun();
+
+	TryClass a;*/
 	//BaseClass * pB;
 	//CreateMyThread();
 
