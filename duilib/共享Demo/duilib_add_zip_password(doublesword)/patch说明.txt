@@ -1,0 +1,6 @@
+1.duilib目录下新建lib目录，因为我看到duilib的链接库-》输入有链接这个目录，就大胆的把这个库加入到此
+2.zip库的源码叫zip_test工程，源码附上
+3.环境vs2008 sp1
+
+
+上传人：双刃剑 qq：409746848 email：doublesword.jack@gmail.com 2012-11-7 17：00

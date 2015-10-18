@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <BinDir>$(SolutionDir)Bin\</BinDir>
+    <LibDir>$(SolutionDir)Lib\</LibDir>
+    <BuildOutDir>$(SolutionDir)BuildOut\</BuildOutDir>
+    <BuildOutTargetDir>$(BuildOutDir)$(ProjectName)\$(Configuration)\</BuildOutTargetDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(BuildOutTargetDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IntDir>$(BuildOutTargetDir)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+@if not exist "$(BinDir)" mkdir "$(BinDir)" &gt;nul
+@if not exist "$(LibDir)" mkdir "$(LibDir)" &gt;nul
+@if not exist "$(BuildOutDir)Symbol" mkdir "$(BuildOutDir)Symbol" &gt;nul
+
+@if exist "$(BinDir)$(TargetName).exe" del /f "$(BinDir)$(TargetName).exe" &gt;nul
+@if exist "$(BinDir)$(TargetName).dll" del /f "$(BinDir)$(TargetName).dll" &gt;nul
+@if exist "$(LibDir)$(TargetName).lib" del /f "$(LibDir)$(TargetName).lib" &gt;nul
+
+@if exist "$(OutDir)$(TargetName).exe" copy "$(OutDir)$(TargetName).exe" "$(BinDir)$(TargetName).exe" &gt;nul
+@if exist "$(OutDir)$(TargetName).dll" copy "$(OutDir)$(TargetName).dll" "$(BinDir)$(TargetName).dll" &gt;nul
+@if exist "$(OutDir)$(TargetName).lib" copy "$(OutDir)$(TargetName).lib" "$(LibDir)$(TargetName).lib" &gt;nul
+
+@if exist "$(BuildOutDir)Symbol\$(TargetName).pdb" del /f "$(BuildOutDir)Symbol\$(TargetName).pdb" &gt;nul
+@if exist "$(BuildOutDir)Symbol\$(TargetName).map" del /f "$(BuildOutDir)Symbol\$(TargetName).map" &gt;nul
+
+@if exist "$(OutDir)$(TargetName).pdb" copy "$(OutDir)$(TargetName).pdb" "$(BuildOutDir)Symbol\$(TargetName).pdb" &gt;nul
+@if exist "$(OutDir)$(TargetName).map" copy "$(OutDir)$(TargetName).map" "$(BuildOutDir)Symbol\$(TargetName).map" &gt;nul
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Message>Copy File To Bin</Message>
+    </PostBuildEvent>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="BinDir">
+      <Value>$(BinDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="LibDir">
+      <Value>$(LibDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="BuildOutDir">
+      <Value>$(BuildOutDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="BuildOutTargetDir">
+      <Value>$(BuildOutTargetDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

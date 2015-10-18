@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Duilib11x", "Duilib11x\Duilib11x.vcxproj", "{5C9A6093-B267-43DA-ABB3-266A265F5964}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DuilibTest", "DuilibTest\DuilibTest.vcxproj", "{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		DebugU|Win32 = DebugU|Win32
+		Release|Win32 = Release|Win32
+		ReleaseU|Win32 = ReleaseU|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.Debug|Win32.Build.0 = Debug|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.DebugU|Win32.ActiveCfg = DebugU|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.DebugU|Win32.Build.0 = DebugU|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.Release|Win32.ActiveCfg = Release|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.Release|Win32.Build.0 = Release|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.ReleaseU|Win32.ActiveCfg = ReleaseU|Win32
+		{5C9A6093-B267-43DA-ABB3-266A265F5964}.ReleaseU|Win32.Build.0 = ReleaseU|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.Debug|Win32.Build.0 = Debug|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.DebugU|Win32.ActiveCfg = DebugU|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.DebugU|Win32.Build.0 = DebugU|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.Release|Win32.ActiveCfg = Release|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.Release|Win32.Build.0 = Release|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.ReleaseU|Win32.ActiveCfg = ReleaseU|Win32
+		{4AB64CFC-965A-4FB4-BACA-E56E47AB7314}.ReleaseU|Win32.Build.0 = ReleaseU|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
