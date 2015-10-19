@@ -1,6 +1,7 @@
 <!--请务必使用UTF-8无BOM编码，且标签严格配对-->
 <UIEngine>
-	<layout_XXX id = "SampleWndLayout">
+	<layout id = "SampleWndLayout">
+		<attr></attr>
 		<texture id="wnd.frame.bkg">
 			<attr>
 				<position>0, 0, parent.width, parent.height</position>
@@ -44,10 +45,10 @@
 							</attr>
 						</lable>
 					</children>
-					<children>
-						<event name="OnLButtonDown" file="SampleWnd.lua" func="OnClick"/>
+					<eventlist>
+						<OnLButtonDown file="SampleWnd.lua" func="OnLButtonDown"/>
 						<!--lua文件与xml同名，则file可省略；若func与name同名，则func可省-->
-					</children>
+					</eventlist>
 				</layout>
 				<texture id="customRect">
 					<attr>
@@ -65,23 +66,53 @@
 								<BtnTextColor>#0000ff</BtnTextColor>
 							</attr>
 							<eventlist>
-								<event name="OnClick" />
+								<OnClick />
 							</eventlist>
 						</MyButton>
 					</children>
 				</texture>
 			</children>
 		</texture>
-	</layout_XXX>
+	</layout>
+	
 	<control class="MyButton">
+		<attr_def>
+			<BkgListRes type="string" default="texturelist.hthree.xxxyy" desc="横向三合一背景" />
+		</attr_def>
 		<method_def>
-			<Init file="param.xml.lua" func="Init" />
+			<Init file="dfsbds.lua" func="Init" />
 		</method_def>
 		<event_def>
 			<OnClick param="int, int"/>
 			<OnDrag  param="int, int"/>
 		</event_def>
-		<layout_def>
-		</layout_def>
+		<children>
+		</children>
 	</control>
+	
+	<window id="SampleWnd">
+		<attr>
+			<position>0, 0, 700, 431</position>
+			<title>例样窗口</title>
+			<layered>1</layered>
+			<enable>1</enable>
+			<visible>1</visible>
+			<topmost>0</topmost>
+			<blur>1</blur>
+			<appwnd>1</appwnd>
+			<maxenable>1</maxenable>
+			<minenable>0</minenable>
+			<rootobjectid>wnd.frame.bkg</rootobjectid>
+		</attr>
+		<eventlist>
+			<OnCreate />
+			<OnClose />
+			<OnDestroy />
+			<OnEnableChange />
+			<OnVisibleChange />
+			<OnShowWindow />
+			<OnMove />
+			<OnSize />
+		</eventlist>
+	</window>
 </UIEngine>
