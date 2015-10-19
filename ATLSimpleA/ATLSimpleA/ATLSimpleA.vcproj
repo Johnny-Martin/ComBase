@@ -276,6 +276,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\render.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>

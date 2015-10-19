@@ -21,5 +21,7 @@
 --UnloadLuaFile()
 
 function LuaFun4Cpp(a, b)
-	return a + b
+	-- return a + b
+	return CFun4Lua(a, b) + 100
 end
+

@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATLSimpleA", "ATLSimpleA\ATLSimpleA.vcproj", "{9D601A9F-F910-4092-B59B-0E4B33BE5DC3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATLSimpleAPS", "ATLSimpleA\ATLSimpleAPS.vcproj", "{F5A954F2-712F-40EA-8292-42344051DF41}"
-	ProjectSection(ProjectDependencies) = postProject
-		{9D601A9F-F910-4092-B59B-0E4B33BE5DC3} = {9D601A9F-F910-4092-B59B-0E4B33BE5DC3}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Caller", "Caller\Caller.vcproj", "{644ADBBC-1E2D-440B-AA0D-7684FA627597}"
 EndProject
 Global
@@ -20,8 +15,6 @@ Global
 		{9D601A9F-F910-4092-B59B-0E4B33BE5DC3}.Debug|Win32.Build.0 = Debug|Win32
 		{9D601A9F-F910-4092-B59B-0E4B33BE5DC3}.Release|Win32.ActiveCfg = Release|Win32
 		{9D601A9F-F910-4092-B59B-0E4B33BE5DC3}.Release|Win32.Build.0 = Release|Win32
-		{F5A954F2-712F-40EA-8292-42344051DF41}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F5A954F2-712F-40EA-8292-42344051DF41}.Release|Win32.ActiveCfg = Release|Win32
 		{644ADBBC-1E2D-440B-AA0D-7684FA627597}.Debug|Win32.ActiveCfg = Debug|Win32
 		{644ADBBC-1E2D-440B-AA0D-7684FA627597}.Debug|Win32.Build.0 = Debug|Win32
 		{644ADBBC-1E2D-440B-AA0D-7684FA627597}.Release|Win32.ActiveCfg = Release|Win32

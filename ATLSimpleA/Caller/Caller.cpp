@@ -123,7 +123,8 @@ void CreateMyThread()
 extern "C" int CCallLua ();
 int _tmain(int argc, _TCHAR* argv[])
 {
-	CCallLua ();
+	//CCallLua ();
+	LuaCallC();
 	/*DirveClass D1;
 	BaseClass B1 = D1;
 
