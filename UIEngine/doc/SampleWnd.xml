@@ -1,6 +1,6 @@
 <!--请务必使用UTF-8无BOM编码，且标签严格配对-->
 <UIEngine>
-	<layout_def id = "SampleWndLayout">
+	<layout_XXX id = "SampleWndLayout">
 		<texture id="wnd.frame.bkg">
 			<attr>
 				<position>0, 0, parent.width, parent.height</position>
@@ -72,7 +72,7 @@
 				</texture>
 			</children>
 		</texture>
-	</layout_def>
+	</layout_XXX>
 	<control class="MyButton">
 		<method_def>
 			<Init file="param.xml.lua" func="Init" />
