@@ -1,0 +1,87 @@
+<!--请务必使用UTF-8无BOM编码，且标签严格配对-->
+<UIEngine>
+	<layout_def id = "SampleWndLayout">
+		<texture id="wnd.frame.bkg">
+			<attr>
+				<position>0, 0, parent.width, parent.height</position>
+				<!--或者-->
+				<left>0</left>
+				<top>0</top>
+				<width>parent.width</width>
+				<height>parent.height</height>
+				<resource>texture.hthree.frameBkg</resource>
+				<!--或者-->
+				<resource>texturelist.nine.frameBkg.3</resource>
+			</attr>
+			<children>
+				<layout id="titleLayout">
+					<attr>
+						<position>3, 3, parent.width - 3, 20</position>
+					</attr>
+					<children>
+						<image id="wnd.content.icon">
+							<attr>
+								<position>0, 0, 15, 15</position>
+								<resource>image.frameBkg</resource>
+								<!--或者-->
+								<resource>imagelist.frameBkg.3</resource>
+							</attr>
+						</image>
+						<lable id="titleText">
+							<attr>
+								<position>15 + 3, 0, parent.width - 15, parent.height</position>
+								<!--facename.height.weight.underline.italic.strickout-->
+								<font>微软雅黑.12.thin.1.0.1</font>
+								<!--  R  G  B alpha-->
+								<!--DDD.DDD.DD.DD  -->
+								<!--#XX XX XX XX   -->
+								<color>#0512acff</color>
+								<!--或者-->
+								<color>5.18.172.255</color>
+								<text>5.18.172.255</message>
+								<valign>top</valign>
+								<halign>left</halign>
+							</attr>
+						</lable>
+					</children>
+					<children>
+						<event name="OnLButtonDown" file="SampleWnd.lua" func="OnClick"/>
+						<!--lua文件与xml同名，则file可省略；若func与name同名，则func可省-->
+					</children>
+				</layout>
+				<texture id="customRect">
+					<attr>
+						<position>0,20,parent.width, parent.height-20</position>
+						<resource>texture.nine.customRectBkg</resource>
+					</attr>
+					<children>
+						<MyButton id="centerBtn">
+							<attr>
+								<position>(parent.width - 80)/2, 10, 80, 30</position>
+								<BtnText>居中按钮</BtnText>
+								<BtnFont>宋体.13.normal</BtnFont>
+								<BkgListRes>imagelist.aaabbb</BkgListRes>
+								<BkgListRes>texturelist.hthree.aaabbb</BkgListRes>
+								<BtnTextColor>#0000ff</BtnTextColor>
+							</attr>
+							<eventlist>
+								<event name="OnClick" />
+							</eventlist>
+						</MyButton>
+					</children>
+				</texture>
+			</children>
+		</texture>
+	</layout_def>
+	<control class="MyButton">
+		<method_def>
+			<Init file="param.xml.lua" func="Init" />
+		</method_def>
+		<event_def>
+			<OnClick param="int, int"/>
+			<OnDrag  param="int, int"/>
+		</event_def>
+		<layout_def>
+		</layout_def>
+	</control>
+</UIEngine>
