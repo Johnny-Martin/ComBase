@@ -16,4 +16,8 @@
 #include <atlbase.h>
 #include <atlstr.h>
 
+#include <vector>
+#include <string>
+#include <set>
+
 // TODO: reference additional headers your program requires here
