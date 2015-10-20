@@ -26,7 +26,7 @@
 							<resource>imagelist.frameBkg.3</resource>
 						</attr>
 					</image>
-					<lable id="titleText">
+					<label id="titleText">
 						<attr>
 							<position>15 + 3, 0, parent.width - 15, parent.height</position>
 							<!--facename.height.weight.underline.italic.strickout-->
@@ -41,7 +41,7 @@
 							<valign>top</valign>
 							<halign>left</halign>
 						</attr>
-					</lable>
+					</label>
 				</children>
 				<eventlist>
 					<OnLButtonDown file="SampleWnd.lua" func="OnLButtonDown"/>
