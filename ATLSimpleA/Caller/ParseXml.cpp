@@ -1,7 +1,11 @@
 #include "stdafx.h"
 #include "ParseXml.h"
 
-string GetFileEncoding();
+HANDLE CheckFileEncoding(LPCWSTR pszFilePath)
+{//若是UTF8 无 BOM编码，返回文件句柄，避免后面重复openfile
+	
+	
+}
 bool CheckLabelMatch();
 bool CompileXml()
 {

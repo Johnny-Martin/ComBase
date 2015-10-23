@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <string>
+#include <wstring>
 #include <set>
 
 // TODO: reference additional headers your program requires here
