@@ -179,6 +179,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ParseXml.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -206,6 +210,10 @@
 			>
 			<File
 				RelativePath=".\lua_and_c.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ParseXml.h"
 				>
 			</File>
 			<File
