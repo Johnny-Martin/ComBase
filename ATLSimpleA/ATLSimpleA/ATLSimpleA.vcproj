@@ -78,6 +78,7 @@
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
 				LinkIncremental="2"
+				UACExecutionLevel="0"
 				ModuleDefinitionFile=".\ATLSimpleA.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
