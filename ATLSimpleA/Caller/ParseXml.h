@@ -4,3 +4,5 @@ public:
 protected:
 private:
 };
+
+BOOL CheckFileEncoding(LPCWSTR pszFilePath);

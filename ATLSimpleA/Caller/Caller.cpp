@@ -9,6 +9,7 @@
 #include "..\ATLSimpleA\ATLSimpleA_i.c"
 #include <windows.h>
 #include "lua_and_c.h"
+#include "ParseXml.h"
 using namespace std;
 struct Node
 {
@@ -124,7 +125,7 @@ extern "C" int CCallLua ();
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//CCallLua ();
-	LuaCallC();
+	//LuaCallC();
 	/*DirveClass D1;
 	BaseClass B1 = D1;
 
@@ -174,6 +175,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//spIAdd.Release();
 	//::CoInitialize( NULL ); 
+	//cout<<CheckFileEncoding(_T("F:\\code\\ComBase\\trunk\\ATLSimpleA\\Caller\\test no bom.lua"))<<endl;
+	cout<<CheckFileEncoding(_T("F:\\code\\ComBase\\trunk\\ATLSimpleA\\Caller\\test bom.lua"))<<endl;
+	cout<<CheckFileEncoding(_T("F:\\code\\ComBase\\trunk\\ATLSimpleA\\Caller\\test ansi.lua"))<<endl;
 	return 0;
 }
 
