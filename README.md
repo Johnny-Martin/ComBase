@@ -12,3 +12,4 @@ freetype(FreeType license)       http://sourceforge.net/projects/freetype/files/
 TinyXml2(ZLib license)  	     https://github.com/leethomason/tinyxml2/trunk
 Lua(MIT license)  	      		 http://www.lua.org/ftp/lua-5.3.1.tar.gz   website：http://www.lua.org/versions.html#5.3
 zlib(ZLib license)               https://github.com/madler/zlib/trunk
+gaclib(Apache License)           https://github.com/vczh-libraries/Release/trunk
