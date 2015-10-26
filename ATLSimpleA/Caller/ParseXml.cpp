@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ParseXml.h"
-
+using namespace std;
 ////////////////////////////////////////////////////////////////
 //UTF-8是一种变长字节编码方式，第一字节高位连续的1的个数代表了该
 //字符占得字节数，其余字节皆以10开头
@@ -86,4 +86,18 @@ bool CompileXml()
 	return false;
 }
 
+set<string> CBaseWnd::m_attrNameSet = CBaseWnd::InitAttrNameMap();
+set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameMap();
 
+set<string> CBaseWnd::InitAttrNameMap()
+{
+	m_attrNameSet.insert("left");
+
+	return m_attrNameSet;
+}
+set<string> CBaseWnd::InitEventNameMap()
+{
+	m_eventNameSet.insert("left");
+
+	return m_eventNameSet;
+}
