@@ -122,8 +122,30 @@ void CreateMyThread()
 }
 
 extern "C" int CCallLua ();
+
+
+void* GreateModalWndObject()
+{
+	return (void*)new CModalWnd();
+}
+
+void* GreateBaseWndObject()
+{
+	return (void*)new CBaseWnd();
+}
+
+
 int _tmain(int argc, _TCHAR* argv[])
 {
+	{
+		//зЂВс
+		CObjectFactory& factortInstance = CObjectFactory::GetFactoryInstance();
+		factortInstance.RegistClass("CModalWnd", GreateModalWndObject);
+		factortInstance.RegistClass("CBaseWnd", GreateBaseWndObject);
+
+		CBaseWnd* tmpWnd = (CBaseWnd*)factortInstance.CreateObjectByClassName("CBaseWnd");
+		tmpWnd->strWndID;
+	}
 	//CCallLua ();
 	//LuaCallC();
 	/*DirveClass D1;
