@@ -8,8 +8,9 @@
 #include "..\ATLSimpleA\ATLSimpleA_i.h"
 #include "..\ATLSimpleA\ATLSimpleA_i.c"
 #include <windows.h>
-#include "lua_and_c.h"
+//#include "lua_and_c.h"
 #include "ParseXml.h"
+#include "tinyxml2.h"
 using namespace std;
 struct Node
 {
@@ -123,29 +124,43 @@ void CreateMyThread()
 
 extern "C" int CCallLua ();
 
-
-void* GreateModalWndObject()
+int example_1()
 {
-	return (void*)new CModalWnd();
+	tinyxml2::XMLDocument doc;
+	doc.LoadFile("SampleWnd ansi.xml");
+	//doc.Print()
+	int errid = static_cast<int> (doc.ErrorID());
+	if (0 != errid)
+	{
+		//std::cout<<"error: "<<
+		doc.PrintError();
+	}
+	return errid;
 }
 
-void* GreateBaseWndObject()
-{
-	return (void*)new CBaseWnd();
-}
+//void* GreateModalWndObject()
+//{
+//	return (void*)new CBaseWnd();
+//}
+//
+//void* GreateBaseWndObject()
+//{
+//	return (void*)new CBaseWnd();
+//}
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	{
 		//зЂВс
-		CObjectFactory& factortInstance = CObjectFactory::GetFactoryInstance();
+		/*CObjectFactory& factortInstance = CObjectFactory::GetFactoryInstance();
 		factortInstance.RegistClass("CModalWnd", GreateModalWndObject);
 		factortInstance.RegistClass("CBaseWnd", GreateBaseWndObject);
 
 		CBaseWnd* tmpWnd = (CBaseWnd*)factortInstance.CreateObjectByClassName("CBaseWnd");
-		tmpWnd->strWndID;
+		tmpWnd->strWndID;*/
 	}
+	//example_1();
 	//CCallLua ();
 	//LuaCallC();
 	/*DirveClass D1;
