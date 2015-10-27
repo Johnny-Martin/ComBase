@@ -10,7 +10,7 @@
 #include <windows.h>
 //#include "lua_and_c.h"
 #include "ParseXml.h"
-#include "tinyxml2.h"
+//#include "tinyxml2.h"
 using namespace std;
 struct Node
 {
@@ -123,20 +123,20 @@ void CreateMyThread()
 }
 
 extern "C" int CCallLua ();
-
-int example_1()
-{
-	tinyxml2::XMLDocument doc;
-	doc.LoadFile("SampleWnd ansi.xml");
-	//doc.Print()
-	int errid = static_cast<int> (doc.ErrorID());
-	if (0 != errid)
-	{
-		//std::cout<<"error: "<<
-		doc.PrintError();
-	}
-	return errid;
-}
+//
+//int example_1()
+//{
+//	tinyxml2::XMLDocument doc;
+//	doc.LoadFile("SampleWnd ansi.xml");
+//	//doc.Print()
+//	int errid = static_cast<int> (doc.ErrorID());
+//	if (0 != errid)
+//	{
+//		//std::cout<<"error: "<<
+//		doc.PrintError();
+//	}
+//	return errid;
+//}
 
 //void* GreateModalWndObject()
 //{
