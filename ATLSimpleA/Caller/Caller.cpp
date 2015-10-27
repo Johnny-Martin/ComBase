@@ -19,30 +19,23 @@ extern "C" int CCallLua ();
 int example_1()
 {
 	tinyxml2::XMLDocument doc;
-	doc.LoadFile("SampleWnd ansi.xml");
+	doc.LoadFile("SampleWnd no bom.xml");
 	//doc.Print()
 	int errid = static_cast<int> (doc.ErrorID());
 	if (0 != errid)
 	{
 		//std::cout<<"error: "<<
 		doc.PrintError();
+		return errid;
 	}
+
+
 	return errid;
 }
 
-//void* GreateModalWndObject()
-//{
-//	return (void*)new CBaseWnd();
-//}
-//
-//void* GreateBaseWndObject()
-//{
-//	return (void*)new CBaseWnd();
-//}
-
-
 int _tmain(int argc, _TCHAR* argv[])
 {
+	example_1();
 	return 0;
 }
 
