@@ -91,26 +91,27 @@ set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameSet();
 
 set<string> CBaseWnd::InitAttrNameSet()
 {
-	m_attrNameSet.insert("left");
-	m_attrNameSet.insert("top");
-	m_attrNameSet.insert("right");
-	m_attrNameSet.insert("bottom");
-	m_attrNameSet.insert("leftexp");
-	m_attrNameSet.insert("topexp");
-	m_attrNameSet.insert("rightexp");
-	m_attrNameSet.insert("bottomexp");
-	m_attrNameSet.insert("title");
-	m_attrNameSet.insert("visible");
-	m_attrNameSet.insert("enable");
-	m_attrNameSet.insert("topmost");
-	m_attrNameSet.insert("layered");
-	m_attrNameSet.insert("appwnd");
-	m_attrNameSet.insert("blur");
-	m_attrNameSet.insert("minenable");
-	m_attrNameSet.insert("maxenable");
-	m_attrNameSet.insert("rootobjectid");
+	set<string> attrNameSet;
+	attrNameSet.insert("left");
+	attrNameSet.insert("top");
+	attrNameSet.insert("right");
+	attrNameSet.insert("bottom");
+	attrNameSet.insert("leftexp");
+	attrNameSet.insert("topexp");
+	attrNameSet.insert("rightexp");
+	attrNameSet.insert("bottomexp");
+	attrNameSet.insert("title");
+	attrNameSet.insert("visible");
+	attrNameSet.insert("enable");
+	attrNameSet.insert("topmost");
+	attrNameSet.insert("layered");
+	attrNameSet.insert("appwnd");
+	attrNameSet.insert("blur");
+	attrNameSet.insert("minenable");
+	attrNameSet.insert("maxenable");
+	attrNameSet.insert("rootobjectid");
 	
-	return m_attrNameSet;
+	return attrNameSet;
 }
 bool CBaseWnd::InitAttrMap()
 {
@@ -131,21 +132,21 @@ bool CBaseWnd::InitAttrMap()
 	m_attrMap.insert(pair<string, string>("minenable", "1"));
 	m_attrMap.insert(pair<string, string>("maxenable", "1"));
 	m_attrMap.insert(pair<string, string>("rootobjectid", ""));
-
 	return true;
 }
 set<string> CBaseWnd::InitEventNameSet()
 {
-	m_eventNameSet.insert("OnCreate");
-	m_eventNameSet.insert("OnShowWnd");
-	m_eventNameSet.insert("OnClose");
-	m_eventNameSet.insert("OnDestory");
-	m_eventNameSet.insert("OnStateChange");
-	m_eventNameSet.insert("OnMove");
-	m_eventNameSet.insert("OnSize");
-	m_eventNameSet.insert("OnVisibleChange");
-	m_eventNameSet.insert("OnEnableChange");
-	m_eventNameSet.insert("OnCreate");
+	set<string> eventNameSet;
+	eventNameSet.insert("OnCreate");
+	eventNameSet.insert("OnShowWnd");
+	eventNameSet.insert("OnShowWnd");
+	eventNameSet.insert("OnDestory");
+	eventNameSet.insert("OnStateChange");
+	eventNameSet.insert("OnMove");
+	eventNameSet.insert("OnSize");
+	eventNameSet.insert("OnVisibleChange");
+	eventNameSet.insert("OnEnableChange");
+	eventNameSet.insert("OnCreate");
 
-	return m_eventNameSet;
+	return eventNameSet;
 }
