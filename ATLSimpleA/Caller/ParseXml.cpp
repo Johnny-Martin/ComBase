@@ -86,18 +86,66 @@ bool CompileXml()
 	return false;
 }
 
-set<string> CBaseWnd::m_attrNameSet = CBaseWnd::InitAttrNameMap();
-set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameMap();
+set<string> CBaseWnd::m_attrNameSet = CBaseWnd::InitAttrNameSet();
+set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameSet();
 
-set<string> CBaseWnd::InitAttrNameMap()
+set<string> CBaseWnd::InitAttrNameSet()
 {
 	m_attrNameSet.insert("left");
-
+	m_attrNameSet.insert("top");
+	m_attrNameSet.insert("right");
+	m_attrNameSet.insert("bottom");
+	m_attrNameSet.insert("leftexp");
+	m_attrNameSet.insert("topexp");
+	m_attrNameSet.insert("rightexp");
+	m_attrNameSet.insert("bottomexp");
+	m_attrNameSet.insert("title");
+	m_attrNameSet.insert("visible");
+	m_attrNameSet.insert("enable");
+	m_attrNameSet.insert("topmost");
+	m_attrNameSet.insert("layered");
+	m_attrNameSet.insert("appwnd");
+	m_attrNameSet.insert("blur");
+	m_attrNameSet.insert("minenable");
+	m_attrNameSet.insert("maxenable");
+	m_attrNameSet.insert("rootobjectid");
+	
 	return m_attrNameSet;
 }
-set<string> CBaseWnd::InitEventNameMap()
+bool CBaseWnd::InitAttrMap()
 {
-	m_eventNameSet.insert("left");
+	m_attrMap.insert(pair<string, string>("left", "0"));
+	m_attrMap.insert(pair<string, string>("top", "0"));
+	m_attrMap.insert(pair<string, string>("right", "0"));
+	m_attrMap.insert(pair<string, string>("bottom", "0"));
+	m_attrMap.insert(pair<string, string>("leftexp", ""));
+	m_attrMap.insert(pair<string, string>("topexp", ""));
+	m_attrMap.insert(pair<string, string>("rightexp", ""));
+	m_attrMap.insert(pair<string, string>("bottomexp", ""));
+	m_attrMap.insert(pair<string, string>("visible", "1"));
+	m_attrMap.insert(pair<string, string>("enable", "1"));
+	m_attrMap.insert(pair<string, string>("topmost", "0"));
+	m_attrMap.insert(pair<string, string>("layered", "1"));
+	m_attrMap.insert(pair<string, string>("appwnd", "1"));
+	m_attrMap.insert(pair<string, string>("blur", "0"));
+	m_attrMap.insert(pair<string, string>("minenable", "1"));
+	m_attrMap.insert(pair<string, string>("maxenable", "1"));
+	m_attrMap.insert(pair<string, string>("rootobjectid", ""));
+
+	return true;
+}
+set<string> CBaseWnd::InitEventNameSet()
+{
+	m_eventNameSet.insert("OnCreate");
+	m_eventNameSet.insert("OnShowWnd");
+	m_eventNameSet.insert("OnClose");
+	m_eventNameSet.insert("OnDestory");
+	m_eventNameSet.insert("OnStateChange");
+	m_eventNameSet.insert("OnMove");
+	m_eventNameSet.insert("OnSize");
+	m_eventNameSet.insert("OnVisibleChange");
+	m_eventNameSet.insert("OnEnableChange");
+	m_eventNameSet.insert("OnCreate");
 
 	return m_eventNameSet;
 }
