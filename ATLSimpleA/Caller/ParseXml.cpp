@@ -92,6 +92,7 @@ set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameSet();
 set<string> CBaseWnd::InitAttrNameSet()
 {
 	set<string> attrNameSet;
+	attrNameSet.insert("position");
 	attrNameSet.insert("left");
 	attrNameSet.insert("top");
 	attrNameSet.insert("right");
@@ -115,6 +116,7 @@ set<string> CBaseWnd::InitAttrNameSet()
 }
 bool CBaseWnd::InitAttrMap()
 {
+	m_attrMap.insert(pair<string, string>("position", ""));
 	m_attrMap.insert(pair<string, string>("left", "0"));
 	m_attrMap.insert(pair<string, string>("top", "0"));
 	m_attrMap.insert(pair<string, string>("right", "0"));
@@ -149,4 +151,23 @@ set<string> CBaseWnd::InitEventNameSet()
 	eventNameSet.insert("OnCreate");
 
 	return eventNameSet;
+}
+bool CBaseWnd::SetAttr(string key, string value)
+{
+	if (m_attrNameSet.end() != m_attrNameSet.find(key))
+	{
+		m_attrMap.insert(pair<string, string>(key, value));
+		return true;
+	}
+	return false;
+}
+bool CBaseWnd::GetAttr(string key, string* value)
+{
+	map<string, string>::iterator iter = m_attrMap.find(key);
+	if (m_attrMap.end() != iter)
+	{
+		*value = iter->second;
+		return true;
+	}
+	return false;
 }

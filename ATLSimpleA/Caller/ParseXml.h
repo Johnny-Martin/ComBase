@@ -52,8 +52,11 @@ private:
 class CBaseWnd
 {
 public:
+	CBaseWnd(){ InitAttrMap(); }
 	bool SetAttr(string key, string value);
-	string GetAttr(string key, string value);
+	bool GetAttr(string key, string* value);
+	static bool CheckAttrName(string strName){ return (m_attrNameSet.end() != m_attrNameSet.find(strName)) ? true:false;}
+	static bool CheckEventName(string strName){ return (m_attrNameSet.end() != m_eventNameSet.find(strName)) ? true:false;}
 private:
 	static set<string> InitAttrNameSet();
 	static set<string> InitEventNameSet();
