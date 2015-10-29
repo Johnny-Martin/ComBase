@@ -72,3 +72,53 @@ private:
 //set<string> CBaseWnd::InitAttrNameMap()
 //
 //set<string> CBaseWnd::InitEventNameMap()
+
+enum XMLERROR{
+	XML_SUCCESS = 0;
+	XML_WRONG_ENCODING_TYPE;
+	XML_MISMATCH;
+
+};
+//handle the special character 
+//&lt;	    <
+//&gt;	    >
+//&amp;	    &
+//&apos;	'
+//&quot;	"
+struct ENTITY{
+	const char* pattern;
+	unsigned int lenth;
+	char value;
+};
+
+static const ENTITY entities[]={
+	{ "lt",   2, '<' },
+	{ "gt",   2, '>' },
+	{ "amp",  3, '&' },
+	{ "apos", 4, '\''},
+	{ "quot", 4, '\"'},
+};
+
+class XMLObject
+{
+public:
+protected:
+private:
+	string objectClass;
+	string objectId;
+};
+class XMLNode
+{
+public:
+	XMLERROR LoadXmlFile();
+private:
+	static bool CheckFileEncoding(LPCWSTR pszFilePath);
+
+	map<string, string> m_nodeAttrMap;
+	string m_nodeName;
+	string m_nodeValue;
+
+	XMLNode* m_pParent;
+	vector<XMLNode*> m_pChildren;
+	unsigned int m_nodeBeginLineNumber£»
+};
