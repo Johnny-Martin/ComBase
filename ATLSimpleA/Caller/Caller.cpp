@@ -12,6 +12,7 @@
 #include "ParseXml.h"
 #include "tinyxml2.h"
 using namespace std;
+using namespace tinyxml2;
 
 
 extern "C" int CCallLua ();
@@ -29,6 +30,34 @@ int example_1()
 		return errid;
 	}
 
+	int v0 = 0;
+	int v1 = 0;
+	XMLElement* rootElement = doc.FirstChildElement();
+	XMLElement* windowElement = rootElement->FirstChildElement("window");
+	XMLElement* wndAttrElement = windowElement->FirstChildElement("attr");
+	//traverse all child node about attr node
+	//class CBaseWnd should have the ability of traversing all attribute in map;
+	string attrName;
+	string attrValue;
+	CBaseWnd tmpWnd;
+	for( XMLNode* ele = wndAttrElement->FirstChild(); ele; ele = ele->NextSibling())
+	{
+		attrName = ((XMLElement*)ele)->Value();
+		attrValue = ((XMLElement*)ele)->GetText();
+		if (CBaseWnd::CheckAttrName(attrName))
+		{
+			tmpWnd.SetAttr(attrName, attrValue);
+		}
+	}
+	
+	//cout<<tmpWnd.GetAttr()
+	XMLElement* attrLayeredElement = wndAttrElement->FirstChildElement("layered");
+	attrLayeredElement->QueryIntText( &v0 );
+
+	//XMLElement* textApproachElement = doc.FirstChildElement()->FirstChildElement( "textApproach" );
+	//textApproachElement->FirstChildElement( "v" )->QueryIntText( &v1 );
+
+	printf( "Both values are the same: %d and %d\n", v0, v1 );
 
 	return errid;
 }
