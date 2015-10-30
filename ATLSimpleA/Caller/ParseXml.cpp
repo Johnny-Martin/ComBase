@@ -181,7 +181,7 @@ bool CBaseWnd::GetAttr(string key, string* value)
 //a lable name end with 0x20(space)、LF、CR、'/>'、or '>'
 //read a whole label(until '>'), if match '/>',then close the label;
 //handle the label ID and the label attributes
-string ReadLableName(std::ifstream inFile)
+XMLERROR ReadLableName(std::ifstream inFile, XMLObject** ppLableObj)
 {
 	string ret="";
 	char tmp;
@@ -191,17 +191,15 @@ string ReadLableName(std::ifstream inFile)
 	{
 		count++;
 		inFile.read(&tmp, sizeof(char));
-		if (tmp >= 'A' && tmp <= 'z')
+		if ('>' == tmp)
+			break;
+		else
 			ret.append(sizeof(char), tmp);
-		else if (CR == tmp || LF == tmp || '>' == tmp)
-		{
-			return ret;
-		}
-		else if ( '/' == tmp)
-		{
-			
-		}
 	}
+	if ('>' != tmp)
+		return XML_WRONG_LABELNOTCOMPLETE;
+	
+	
 }
 XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 {
