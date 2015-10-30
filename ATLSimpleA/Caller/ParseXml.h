@@ -74,10 +74,10 @@ private:
 //set<string> CBaseWnd::InitEventNameMap()
 
 enum XMLERROR{
-	XML_SUCCESS = 0;
-	XML_WRONG_ENCODING_TYPE;
-	XML_MISMATCH;
-
+	XML_SUCCESS = 0,
+	XML_WRONG_FILENOTEXISTS,
+	XML_WRONG_ENCODING_TYPE,
+	XML_MISMATCH,
 };
 //handle the special character 
 //&lt;	    <
@@ -102,23 +102,37 @@ static const ENTITY entities[]={
 class XMLObject
 {
 public:
-protected:
+	
 private:
-	string objectClass;
-	string objectId;
+	map<string, string> m_attrMap;
+	string m_name;
+	string m_value;
+
+	XMLObject* m_pParent;
+	vector<XMLObject*> m_pChildren;
+	unsigned int m_nodeBeginLineNumber;
 };
-class XMLNode
+
+class XMLFile
 {
 public:
-	XMLERROR LoadXmlFile();
+	XMLERROR LoadXmlFile(LPCWSTR pszFilePath)
+	{
+		BOOL ret = ::PathFileExists(pszFilePath);
+		if (!ret) return XML_WRONG_FILENOTEXISTS;
+		
+		if (!CheckFileEncoding(pszFilePath))
+			return XML_WRONG_ENCODING_TYPE;
+		
+		return ParseXml(pszFilePath);
+	}
+	
+	XMLERROR ParseXml(LPCWSTR pszFilePath);
+protected:
 private:
 	static bool CheckFileEncoding(LPCWSTR pszFilePath);
 
-	map<string, string> m_nodeAttrMap;
-	string m_nodeName;
-	string m_nodeValue;
-
-	XMLNode* m_pParent;
-	vector<XMLNode*> m_pChildren;
-	unsigned int m_nodeBeginLineNumber£»
+	XMLObject m_rootObj;//the m_rootObj's id *must* be ""
+	
+	unsigned int m_curLineNumber;
 };

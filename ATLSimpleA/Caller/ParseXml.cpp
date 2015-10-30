@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "ParseXml.h"
 using namespace std;
+
+static const char LINE_FEED				= (char)0x0a;
+static const char LF = LINE_FEED;
+static const char CARRIAGE_RETURN		= (char)0x0d;
+static const char CR = CARRIAGE_RETURN;
+
 ////////////////////////////////////////////////////////////////
 //UTF-8是一种变长字节编码方式，第一字节高位连续的1的个数代表了该
 //字符占得字节数，其余字节皆以10开头
@@ -13,8 +19,8 @@ using namespace std;
 //与UTF8 无BOM编码一模一样，这种情况下，也认为是UTF8无BOM编码
 BOOL CheckFileEncoding(LPCWSTR pszFilePath)
 {//若是UTF8 无 BOM编码，返回文件句柄，避免后面重复openfile
-	BOOL ret = ::PathFileExists(pszFilePath);
-	if (!ret) return FALSE;
+	//BOOL ret = ::PathFileExists(pszFilePath);
+	//if (!ret) return FALSE;
 
 	std::ifstream inFile(pszFilePath, ios::in|ios::binary);
 	if (!inFile) return FALSE;
@@ -170,4 +176,53 @@ bool CBaseWnd::GetAttr(string key, string* value)
 		return true;
 	}
 	return false;
+}
+
+//a lable name end with 0x20(space)、LF、CR、'/>'、or '>'
+string ReadLableName(std::ifstream inFile)
+{
+	string ret="";
+	char tmp;
+	unsigned int count=0;
+	
+	while (!inFile.eof())
+	{
+		count++;
+		inFile.read(&tmp, sizeof(char));
+		if (tmp >= 'A' && tmp <= 'z')
+			ret.append(sizeof(char), tmp);
+		else if (CR == tmp || LF == tmp || '>' == tmp)
+		{
+			return ret;
+		}
+		else if ( '/' == tmp)
+		{
+			
+		}
+	}
+}
+XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
+{
+	std::ifstream inXmlFile(pszFilePath, ios::in);
+	Assert(inXmlFile);
+
+	std::stack<XMLObject> lableObjStack;
+	inXmlFile.seekg(0);
+
+	//create a tmp XMLObject and push in lableObjStack, and fill in the obj's attr
+	//pop out when match a finish label;
+	//and then push the finished obj in XMLFile obj's m_xmlObjVec
+
+	char tmpChar=0;
+	while (!inXmlFile.eof())
+	{
+		//注释无需压栈
+		inXmlFile.read(&tmpChar, sizeof(tmpChar));
+		if ('<' == tmpChar)
+		{
+			XMLObject* newObj = new XMLObject;
+		}
+		
+	}
+	return XML_SUCCESS;
 }
