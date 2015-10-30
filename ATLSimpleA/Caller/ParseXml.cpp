@@ -179,6 +179,8 @@ bool CBaseWnd::GetAttr(string key, string* value)
 }
 
 //a lable name end with 0x20(space)、LF、CR、'/>'、or '>'
+//read a whole label(until '>'), if match '/>',then close the label;
+//handle the label ID and the label attributes
 string ReadLableName(std::ifstream inFile)
 {
 	string ret="";
