@@ -21,9 +21,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#include "stdafx.h"
 #include "tinyxml2.h"
 
 #include <new>		// yes, this one new style header, is in the Android SDK.
+
+using namespace tinyxml2;
 #if defined(ANDROID_NDK) || defined(__QNXNTO__)
 #   include <stddef.h>
 #   include <stdarg.h>
@@ -1002,6 +1005,7 @@ char* XMLNode::ParseDeep( char* p, StrPair* parentEnd )
                 }
             }
             if ( mismatch ) {
+				//Set error line
                 _document->SetError( XML_ERROR_MISMATCHED_ELEMENT, ele->Name(), 0 );
                 DeleteNode( node );
                 break;
