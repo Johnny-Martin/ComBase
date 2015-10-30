@@ -4,6 +4,7 @@
 	#endif
 #endif
 
+#include "stdafx.h"
 #include "tinyxml2.h"
 #include <cstdlib>
 #include <cstring>
@@ -22,7 +23,6 @@
 	#include <sys/stat.h>	// mkdir
 #endif
 
-using namespace tinyxml2;
 using namespace std;
 int gPass = 0;
 int gFail = 0;
