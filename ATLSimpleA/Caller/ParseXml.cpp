@@ -2,11 +2,14 @@
 #include "ParseXml.h"
 using namespace std;
 
+static const char HORIZONTAL_TAB		= (char)0x09;
+static const char HT = HORIZONTAL_TAB;
 static const char LINE_FEED				= (char)0x0a;
 static const char LF = LINE_FEED;
 static const char CARRIAGE_RETURN		= (char)0x0d;
 static const char CR = CARRIAGE_RETURN;
-
+static const char SPACE_KEY				= (char)0x20;
+static const char SP = SPACE_KEY;
 ////////////////////////////////////////////////////////////////
 //UTF-8是一种变长字节编码方式，第一字节高位连续的1的个数代表了该
 //字符占得字节数，其余字节皆以10开头
@@ -17,13 +20,13 @@ static const char CR = CARRIAGE_RETURN;
 //6字节 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 
 //注意: 若一个ANSI编码的文本文件中，全部是英文字符，则其文件编码
 //与UTF8 无BOM编码一模一样，这种情况下，也认为是UTF8无BOM编码
-BOOL CheckFileEncoding(LPCWSTR pszFilePath)
+bool XMLFile::CheckFileEncoding(LPCWSTR pszFilePath)
 {//若是UTF8 无 BOM编码，返回文件句柄，避免后面重复openfile
 	//BOOL ret = ::PathFileExists(pszFilePath);
 	//if (!ret) return FALSE;
 
 	std::ifstream inFile(pszFilePath, ios::in|ios::binary);
-	if (!inFile) return FALSE;
+	if (!inFile) return false;
 	
 	char byteFirst  = 0;
 	char byteSecond = 0;
@@ -37,7 +40,7 @@ BOOL CheckFileEncoding(LPCWSTR pszFilePath)
 	{//UTF-8 BOM头为文件前三字节：0xEF、0xBB、0xBF
 		inFile.close();
 		cout<<"UTF-8 带BOM编码"<<endl;
-		return FALSE;//UTF8 带 BOM 编码
+		return false;//UTF8 带 BOM 编码
 	}
 	
 	//将文件扫一遍，整个文件的编码若符合UTF8编码规则，则可认为其为UTF8 无 BOM编码
@@ -63,7 +66,7 @@ BOOL CheckFileEncoding(LPCWSTR pszFilePath)
 		else 
 		{
 			inFile.close();
-			return FALSE;
+			return false;
 		}
 		
 		while (--byteCount > 0)
@@ -72,14 +75,14 @@ BOOL CheckFileEncoding(LPCWSTR pszFilePath)
 			if ((byteTmp & 0x80) != 0x80)
 			{
 				inFile.close();
-				return FALSE;
+				return false;
 			}
 		}
 	}
 
 	inFile.close();
 	cout<<"UTF-8 无BOM编码"<<endl;
-	return TRUE;
+	return true;
 }
 bool CheckLabelMatch()
 {
@@ -178,35 +181,110 @@ bool CBaseWnd::GetAttr(string key, string* value)
 	return false;
 }
 
-//a lable name end with 0x20(space)、LF、CR、'/>'、or '>'
+//a label name end with 0x20(space)、LF、CR、HT、'/>'、or '>'
 //read a whole label(until '>'), if match '/>',then close the label;
 //handle the label ID and the label attributes
-XMLERROR ReadLableName(std::ifstream inFile, XMLObject** ppLableObj)
+XMLERROR ReadLableName(std::ifstream inFile, XMLabel** ppLableObj)
 {
 	string ret="";
 	char tmp;
 	unsigned int count=0;
+	string labelName;//label class name
+	string attrName;
+	string attrValue;
+	bool bLabelNameComplete = false;
+	bool bLabelClose        = false;
+	bool bAttrNameComplete  = false;
+	bool bAttrValueComplete = true;
+	bool bComplete = false;
+
+#define  LABEL_ID_ENDLESS(tmpChar) (SP != tmp && CR != tmp && HT != tmp && LF != tmp && '/' != tmp)
 	
+	XMLabel* tmpXmlObj = new XMLabel();
 	while (!inFile.eof())
 	{
 		count++;
 		inFile.read(&tmp, sizeof(char));
-		if ('>' == tmp)
+		if ('>' == tmp )
+		{
+			bLabelNameComplete = true;
 			break;
-		else
-			ret.append(sizeof(char), tmp);
+		}else if ('/' == tmp)
+		{
+			inFile.read(&tmp, sizeof(char));
+			if ('>' == tmp)
+			{
+				bLabelNameComplete = true;
+				bLabelClose = true;
+				break;
+			}else
+			{
+				delete tmpXmlObj;
+				return XML_ERROR_LABELTAIL;
+			}
+		}else if (!bLabelNameComplete )
+		{
+			if (LABEL_ID_ENDLESS(tmp))
+				labelName.append(sizeof(char), tmp);
+			else
+			{
+				bLabelNameComplete = true;
+				tmpXmlObj->SetLabelClassName(labelName);
+			}
+		}else if (!bAttrNameComplete)
+		{
+			if (0 == attrName.length() && !LABEL_ID_ENDLESS(tmp))
+				continue;
+			else if (LABEL_ID_ENDLESS(tmp) && ('=' != tmp))
+				attrName.append(sizeof(char), tmp);
+			else
+			{
+				bAttrNameComplete = true;
+			}
+		}else if (!bAttrValueComplete)
+		{
+			if (0 == attrValue.length() && (!LABEL_ID_ENDLESS(tmpChar) || '=' == tmp))
+			{
+				if ('\"' == tmp)
+					bAttrValueComplete = false;
+				continue;
+			}
+			else if (!bAttrValueComplete && LABEL_ID_ENDLESS(tmp))
+			{
+				if (('\"' != tmp))
+					attrValue.append(sizeof(char), tmp);
+				else
+				{
+					bAttrValueComplete = true;
+				}
+			}
+		}
+		
+		if (bAttrNameComplete && bAttrValueComplete)
+		{
+			tmpXmlObj->SetAttribute(attrName, attrValue)
+			bAttrNameComplete  = false;
+			bAttrValueComplete = true;
+		}
 	}
-	if ('>' != tmp)
-		return XML_WRONG_LABELNOTCOMPLETE;
 	
+	if (!bLabelNameComplete || bAttrNameComplete || !bAttrValueComplete)
+	{
+		delete tmpXmlObj;
+		return XML_ERROR_LABELTAIL;
+	}
 	
+	tmpXmlObj->SetLabelClose(bLabelClose);
+	*ppLableObj = tmpXmlObj;
+	return XML_SUCCESS;
 }
+
 XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 {
 	std::ifstream inXmlFile(pszFilePath, ios::in);
 	Assert(inXmlFile);
 
-	std::stack<XMLObject> lableObjStack;
+	std::stack<XMLabel> lableObjStack;
 	inXmlFile.seekg(0);
 
 	//create a tmp XMLObject and push in lableObjStack, and fill in the obj's attr
@@ -220,7 +298,8 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 		inXmlFile.read(&tmpChar, sizeof(tmpChar));
 		if ('<' == tmpChar)
 		{
-			XMLObject* newObj = new XMLObject;
+			XMLObject* newObj;
+			ReadLableName(inXmlFile, &newObj);
 		}
 		
 	}

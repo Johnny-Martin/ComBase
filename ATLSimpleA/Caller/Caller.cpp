@@ -62,9 +62,15 @@ int example_1()
 	return errid;
 }
 
+void example_2()
+{
+	XMLFile xmlFile;
+	xmlFile.LoadXmlFile(_T("SampleWnd no bom.xml"));
+}
 int _tmain(int argc, _TCHAR* argv[])
 {
-	example_1();
+	//example_1();
+	example_2();
 	return 0;
 }
 
