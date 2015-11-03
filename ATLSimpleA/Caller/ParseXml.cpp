@@ -285,6 +285,7 @@ XMLERROR ReadLable(std::ifstream& inFile, XMLabel** ppLableObj)
 	}
 	
 	tmpXmlObj->SetLabelClose(bLabelClose);
+	tmpXmlObj->SetLabelClassName(labelName);
 	*ppLableObj = tmpXmlObj;
 	return XML_SUCCESS;
 }
@@ -294,13 +295,14 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 	std::ifstream inXmlFile(pszFilePath, ios::in);
 	//Assert(inXmlFile);
 
-	//std::stack<XMLabel> lableObjStack;
+	std::stack<XMLabel*> lableObjStack;
 	inXmlFile.seekg(0);
 
 	//create a tmp XMLabel and push in lableObjStack, and fill in the obj's attr
 	//pop out when match a finish label;
 	//and then push the finished obj in XMLFile obj's m_xmlObjVec
 
+	XMLabel* newObj = NULL;
 	char tmpChar=0;
 	while (!inXmlFile.eof())
 	{
@@ -308,8 +310,12 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 		inXmlFile.read(&tmpChar, sizeof(tmpChar));
 		if ('<' == tmpChar)
 		{
-			XMLabel* newObj;
-			ReadLable(inXmlFile, &newObj);
+			
+			XMLERROR ret = ReadLable(inXmlFile, &newObj);
+			if (XML_SUCCESS == ret && newObj != NULL)
+			{
+
+			}
 		}
 		
 	}
