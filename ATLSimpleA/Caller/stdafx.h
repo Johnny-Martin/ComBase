@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <stack>
 #include <map>
 
 // TODO: reference additional headers your program requires here

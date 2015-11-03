@@ -76,7 +76,6 @@ private:
 //set<string> CBaseWnd::InitAttrNameMap()
 //
 //set<string> CBaseWnd::InitEventNameMap()
-
 enum XMLERROR{
 	XML_SUCCESS = 0,
 	XML_WRONG_FILENOTEXISTS,
@@ -86,6 +85,7 @@ enum XMLERROR{
 	XML_WRONG_CHILDREN_ID_NOTFOUND,
 	XML_ERROR_LABELTAIL,
 	XML_MISMATCH,
+	XML_ERROR_COUNT
 };
 //handle the special character 
 //&lt;	    <
@@ -184,14 +184,14 @@ public:
 	XMLERROR LoadXmlFile(LPCWSTR pszFilePath)
 	{
 		BOOL ret = ::PathFileExists(pszFilePath);
-		if (!ret) return XML_WRONG_FILENOTEXISTS;
-		
-		if (!CheckFileEncoding(pszFilePath))
+		if (!ret) 
+			return XML_WRONG_FILENOTEXISTS;
+
+		if (!XMLFile::CheckFileEncoding(pszFilePath))
 			return XML_WRONG_ENCODING_TYPE;
-		
-		return this->ParseXml(pszFilePath);
+
+		return ParseXml(pszFilePath);
 	}
-	
 protected:
 private:
 	XMLabel m_rootLabel;//the m_rootObj's id *must* be ""

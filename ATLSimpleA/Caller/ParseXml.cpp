@@ -184,7 +184,17 @@ bool CBaseWnd::GetAttr(string key, string* value)
 //a label name end with 0x20(space)、LF、CR、HT、'/>'、or '>'
 //read a whole label(until '>'), if match '/>',then close the label;
 //handle the label ID and the label attributes
-XMLERROR ReadLableName(std::ifstream inFile, XMLabel** ppLableObj)
+XMLERROR ReadLabelAttrValue(std::ifstream& inFile, string strValue)
+{
+
+	return XML_SUCCESS;
+}
+XMLERROR ReadLabelAttrName(std::ifstream& inFile, string attrName)
+{
+	
+	return XML_SUCCESS;
+}
+XMLERROR ReadLable(std::ifstream& inFile, XMLabel** ppLableObj)
 {
 	string ret="";
 	char tmp;
@@ -262,7 +272,7 @@ XMLERROR ReadLableName(std::ifstream inFile, XMLabel** ppLableObj)
 		
 		if (bAttrNameComplete && bAttrValueComplete)
 		{
-			tmpXmlObj->SetAttribute(attrName, attrValue)
+			tmpXmlObj->SetAttribute(attrName, attrValue);
 			bAttrNameComplete  = false;
 			bAttrValueComplete = true;
 		}
@@ -282,12 +292,12 @@ XMLERROR ReadLableName(std::ifstream inFile, XMLabel** ppLableObj)
 XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 {
 	std::ifstream inXmlFile(pszFilePath, ios::in);
-	Assert(inXmlFile);
+	//Assert(inXmlFile);
 
-	std::stack<XMLabel> lableObjStack;
+	//std::stack<XMLabel> lableObjStack;
 	inXmlFile.seekg(0);
 
-	//create a tmp XMLObject and push in lableObjStack, and fill in the obj's attr
+	//create a tmp XMLabel and push in lableObjStack, and fill in the obj's attr
 	//pop out when match a finish label;
 	//and then push the finished obj in XMLFile obj's m_xmlObjVec
 
@@ -298,8 +308,8 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 		inXmlFile.read(&tmpChar, sizeof(tmpChar));
 		if ('<' == tmpChar)
 		{
-			XMLObject* newObj;
-			ReadLableName(inXmlFile, &newObj);
+			XMLabel* newObj;
+			ReadLable(inXmlFile, &newObj);
 		}
 		
 	}
