@@ -205,7 +205,9 @@ XMLERROR ReadLable(std::ifstream& inFile, XMLabel** ppLableObj)
 	bool bLabelNameComplete = false;
 	bool bLabelClose        = false;
 	bool bAttrNameComplete  = false;
-	bool bAttrValueComplete = true;
+	bool bAttrValueComplete = false;
+	bool bAttrValueBegin    = false;
+	bool bAttrValueEnd      = false;
 	bool bComplete = false;
 
 #define  LABEL_ID_ENDLESS(tmpChar) (SP != tmp && CR != tmp && HT != tmp && LF != tmp && '/' != tmp)
@@ -253,32 +255,43 @@ XMLERROR ReadLable(std::ifstream& inFile, XMLabel** ppLableObj)
 			}
 		}else if (!bAttrValueComplete)
 		{
-			if (0 == attrValue.length() && (!LABEL_ID_ENDLESS(tmpChar) || '=' == tmp))
+			if (0 == attrValue.length() && (!LABEL_ID_ENDLESS(tmp) || '=' == tmp))
 			{
-				if ('\"' == tmp)
-					bAttrValueComplete = false;
+				continue;
+			}else if ('\"' == tmp && !bAttrValueBegin)
+			{
+				bAttrValueBegin = true;
 				continue;
 			}
-			else if (!bAttrValueComplete && LABEL_ID_ENDLESS(tmp))
+			else if (bAttrValueBegin && !bAttrValueComplete && LABEL_ID_ENDLESS(tmp))
 			{
 				if (('\"' != tmp))
 					attrValue.append(sizeof(char), tmp);
 				else
 				{
 					bAttrValueComplete = true;
+					bAttrValueEnd = true;
 				}
 			}
 		}
+		
+		if (bAttrValueComplete)
+			if (!bAttrValueBegin || !bAttrValueEnd)
+				return XML_ERROR_QUOTES_NOT_MATCH;
 		
 		if (bAttrNameComplete && bAttrValueComplete)
 		{
 			tmpXmlObj->SetAttribute(attrName, attrValue);
 			bAttrNameComplete  = false;
-			bAttrValueComplete = true;
+			bAttrValueComplete = false;
+			bAttrValueBegin    = false;
+			bAttrValueEnd      = false;
+			attrName  = "";
+			attrValue = "";
 		}
 	}
 	
-	if (!bLabelNameComplete || bAttrNameComplete || !bAttrValueComplete)
+	if (!bLabelNameComplete || bAttrNameComplete || bAttrValueComplete)
 	{
 		delete tmpXmlObj;
 		return XML_ERROR_LABELTAIL;
