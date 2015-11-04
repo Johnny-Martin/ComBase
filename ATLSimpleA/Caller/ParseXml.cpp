@@ -194,7 +194,7 @@ XMLERROR ReadLabelAttrName(std::ifstream& inFile, string attrName)
 	
 	return XML_SUCCESS;
 }
-XMLERROR ReadLable(std::ifstream& inFile, XMLabel** ppLableObj)
+XMLERROR ReadLableHead(std::ifstream& inFile, XMLabel** ppLableObj)
 {
 	string ret="";
 	char tmp;
@@ -324,7 +324,7 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 		if ('<' == tmpChar)
 		{
 			
-			XMLERROR ret = ReadLable(inXmlFile, &newObj);
+			XMLERROR ret = ReadLableHead(inXmlFile, &newObj);
 			if (XML_SUCCESS == ret && newObj != NULL)
 			{
 
