@@ -84,8 +84,15 @@ enum XMLERROR{
 	XML_WRONG_CHILDREN_ID_RECOVER,
 	XML_WRONG_CHILDREN_ID_NOTFOUND,
 	XML_ERROR_QUOTES_NOT_MATCH,
+	XML_ERROR_LABELHEAD,
 	XML_ERROR_LABELTAIL,
+	XML_ERROR_COMMENTHEAD,
+	XML_ERROR_COMMENTTAIL,
+	XML_ERROR_UNEXPECTTAIL,
+	XML_ERROR_UNEXPECTEND,
+	XML_ERROR_LABELVALUE,
 	XML_MISMATCH,
+	XML_ERROR_UNKNOWN,
 	XML_ERROR_COUNT
 };
 //handle the special character 
@@ -162,7 +169,20 @@ public:
 		
 		return NULL;
 	}
-
+	
+	XMLERROR AddAttribute(map<string, string> *paraMap)
+	{
+		string attrKey;
+		string attrValue;
+		map<string, string>::iterator iter;
+		for (iter=paraMap->begin(); iter!=paraMap->end(); ++iter)
+		{
+			attrKey = iter->first;
+			attrValue = iter->second;
+			m_labelAttrMap.insert(std::pair<string, string>(attrKey, attrValue));
+		}
+		return XML_SUCCESS;
+	}
 	void SetLabelClose(bool bClose){m_bLabelClose = bClose;}
 	bool GetLabelClose(){ return m_bLabelClose;}
 private:
