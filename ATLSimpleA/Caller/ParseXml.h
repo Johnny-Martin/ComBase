@@ -231,12 +231,13 @@ protected:
 private:
 	XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj);
 	XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, map<string, string> *attrMap, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, XMLabel* labelObj);
 	XMLERROR XMLFile::ReadLabelName(std::ifstream& inFile, string* labelNameOut, XMLabel* labelObj);
 	XMLERROR XMLFile::ReadLableTail(std::ifstream& inFile, string* tailName);
 	XMLERROR XMLFile::ReadComment(std::ifstream& inFile);
 	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel** ppLableObj);
 	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLableValue(std::ifstream& inFile, XMLabel* labelObj);
 
 	XMLabel m_rootLabel;//the m_rootObj's id *must* be ""
 	

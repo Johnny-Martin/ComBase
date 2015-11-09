@@ -185,8 +185,9 @@ bool CBaseWnd::GetAttr(string key, string* value)
 //read a whole label(until '>'), if match '/>',then close the label;
 //handle the label ID and the label attributes
 
-#define  LABEL_ID_ENDLESS(tmpChar) (SP != tmp && CR != tmp && HT != tmp && LF != tmp && '/' != tmp)
+#define  LABEL_ID_ENDLESS(tmpChar) (SP != tmpChar && CR != tmpChar && HT != tmpChar && LF != tmpChar && '/' != tmpChar)
 #define  IS_LETTER(tmpChar) (tmpChar >= 'A' && tmpChar <= 'z')
+#define  IS_SPACE_LETTER(tmpChar) (CR == tmpChar || LF == tmpChar)
 
 XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj)
 {
@@ -204,7 +205,10 @@ XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut
 		if ('>' == tmp || '/' == tmp)
 		{
 			labelObj->SetLabelHeadClose(true);
-			return XML_ERROR_UNEXPECTTAIL;
+			if (attrValue.length() > 0)
+				return XML_ERROR_UNEXPECTTAIL;
+			else
+				return XML_SUCCESS;
 		}else if (!bAttrValueComplete)
 		{
 			if (0 == attrValue.length() && (!LABEL_ID_ENDLESS(tmp) || '=' == tmp))
@@ -251,7 +255,11 @@ XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, 
 		if ('>' == tmp || '/' == tmp)
 		{
 			labelObj->SetLabelHeadClose(true);
-			return XML_ERROR_UNEXPECTTAIL;
+			if (attrName.length() > 0)
+				return XML_ERROR_UNEXPECTTAIL;
+			else
+				return XML_SUCCESS;
+			
 		}else if (!bAttrNameComplete)
 		{
 			if (0 == attrName.length() && !LABEL_ID_ENDLESS(tmp))
@@ -271,27 +279,52 @@ XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, 
 	*attrNameOut = attrName;
 	return XML_SUCCESS;
 }
-XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, map<string, string> *attrMap, XMLabel* labelObj)
+XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, XMLabel* labelObj)
 {
 	string attrName;
 	string attrValue;
 	XMLERROR readAttrNameRet;
 	XMLERROR readAttrValueRet;
+	map<string, string> attrMap;
+	bool bHeadClose= false;
 	while(!inFile.eof())
 	{
-		bool bHeadClose = labelObj->GetLabelHeadClose();
-		if (bHeadClose)
-			return XML_ERROR_UNKNOWN;
-
+		attrName = "";
+		attrValue = "";	
 		readAttrNameRet = ReadLabelAttrName(inFile, &attrName, labelObj);
 		if (readAttrNameRet != XML_SUCCESS)
 			return readAttrNameRet;
+		
+		bHeadClose = labelObj->GetLabelHeadClose();
+		if (bHeadClose)
+		{
+			if (0 == attrName.length())
+			{
+				labelObj->AddAttribute(&attrMap);
+				return XML_SUCCESS;
+			}
+			else
+				return XML_ERROR_UNKNOWN;
+		}
 
 		readAttrValueRet = ReadLabelAttrValue(inFile, &attrValue, labelObj);
 		if (readAttrValueRet != XML_SUCCESS)
 			return readAttrValueRet;
 
-		attrMap->insert(pair<string, string>(attrName, attrValue));
+		bHeadClose = labelObj->GetLabelHeadClose();
+		if (bHeadClose)
+		{
+			if (0 == attrValue.length())
+			{
+				labelObj->AddAttribute(&attrMap);
+				return XML_SUCCESS;
+			}
+			else
+				return XML_ERROR_UNKNOWN;
+		}
+
+		if (attrName.length() > 0 && attrValue.length() > 0)
+			attrMap.insert(pair<string, string>(attrName, attrValue));
 	}
 
 	return XML_SUCCESS;
@@ -299,8 +332,8 @@ XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, map<string, string> *attr
 XMLERROR XMLFile::ReadLabelName(std::ifstream& inFile, string* labelNameOut, XMLabel* labelObj)
 {
 	string labelName;//label class name
-	bool bLabelNameComplete = false;
-	bool bLabelClose        = false;
+	bool bLabelHeadClose = false;
+	bool bLabelClose     = false;
 	char tmp = 0;
 
 	bool bHeadClose = labelObj->GetLabelHeadClose();
@@ -312,39 +345,56 @@ XMLERROR XMLFile::ReadLabelName(std::ifstream& inFile, string* labelNameOut, XML
 		inFile.read(&tmp, sizeof(char));
 		if ('>' == tmp )
 		{
-			bLabelNameComplete = true;
+			bLabelHeadClose = true;
 			break;
 		}else if ('/' == tmp)
 		{
 			inFile.read(&tmp, sizeof(char));
 			if ('>' == tmp)
 			{
-				bLabelNameComplete = true;
+				bLabelHeadClose = true;
 				bLabelClose = true;
 				break;
 			}else
 				return XML_ERROR_LABELTAIL;
 
-		}else if (!bLabelNameComplete )
+		}else if (!bLabelHeadClose )
 		{
 			if (LABEL_ID_ENDLESS(tmp))
 				labelNameOut->append(sizeof(char), tmp);
 			else
-			{
-				bLabelNameComplete = true;
 				break;
-			}
 		}
 	}
 	//*labelNameOut = labelName;
-	if (bLabelNameComplete)
-		labelObj->SetLabelHeadClose(true);
+	labelObj->SetLabelHeadClose(bLabelHeadClose);
+	labelObj->SetLabelClose(bLabelClose);
 
 	return XML_SUCCESS;
 }
 XMLERROR XMLFile::ReadLableTail(std::ifstream& inFile, string* tailName)
 {
+	string labelTailName;//label class name
+	bool bLabelTailClose = false;
+	char tmp = 0;
 
+	while (!inFile.eof())
+	{
+		inFile.read(&tmp, sizeof(char));
+		if ('>' == tmp )
+		{
+			bLabelTailClose = true;
+			break;
+		}else
+		{
+			if (IS_LETTER(tmp))
+				tailName->append(sizeof(char), tmp);
+		}
+	}
+
+	if (!bLabelTailClose)
+		return XML_ERROR_LABELTAIL;
+	
 	return XML_SUCCESS;
 }
 XMLERROR XMLFile::ReadComment(std::ifstream& inFile)
@@ -508,8 +558,7 @@ XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj)
 	bool bHeadClose = labelObj->GetLabelHeadClose();
 	if (!bHeadClose)
 	{
-		map<string, string> attrMap;
-		ret = ReadLabelAttr(inFile, &attrMap, labelObj);
+		ret = ReadLabelAttr(inFile, labelObj);
 		if (ret != XML_SUCCESS)
 			return ret;
 	}
@@ -517,6 +566,27 @@ XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj)
 	return XML_SUCCESS;
 
 }
+XMLERROR XMLFile::ReadLableValue(std::ifstream& inFile, XMLabel* labelObj)
+{
+	char tmpChar=0;
+	string labelValue;
+	while (!inFile.eof())
+	{
+		inFile.read(&tmpChar, sizeof(tmpChar));
+		if ('<' == tmpChar)
+		{
+			inFile.seekg(-1, ios::cur);
+			labelObj->SetLabelValue(labelValue);
+			return XML_SUCCESS;
+
+		}else if (CR != tmpChar && LF != tmpChar)
+		{
+			labelValue.append(sizeof(char), tmpChar);
+		}
+	}
+	return XML_ERROR_UNKNOWN;
+}
+
 XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 {
 	//must be ios::binary, because seekg(off, way) do not support text file
@@ -534,6 +604,7 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 	char tmpChar=0;
 	while (!inXmlFile.eof())
 	{
+		XMLERROR ret = XML_SUCCESS;
 		inXmlFile.read(&tmpChar, sizeof(tmpChar));
 		if ('<' == tmpChar)
 		{
@@ -545,11 +616,17 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 					return XML_ERROR_MEMORY;
 				
 				inXmlFile.seekg(-1, ios::cur);
-				XMLERROR ret = ReadLableHead(inXmlFile,  newObj);
+				ret = ReadLableHead(inXmlFile, newObj);
 				
 				if (XML_SUCCESS != ret )
 					return ret;
 				
+				if (!newObj->GetLabelClose())
+				{
+					ret = ReadLableValue(inXmlFile, newObj);
+					if (XML_SUCCESS != ret )
+						return ret;
+				}
 				lableObjStack.push(newObj);
 			}else if ('!' == tmpChar)
 			{
@@ -559,7 +636,12 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 			}else if ('/' == tmpChar)
 			{
 				string labelTailName;
-				ReadLableTail(inXmlFile, &labelTailName);
+				ret = ReadLableTail(inXmlFile, &labelTailName);
+				if (XML_SUCCESS != ret )
+					return ret;
+
+				//pop the labelObject in stack, check the labelObject's id with labelTailName
+				//then set the labelObject to its parent
 			}
 			
 		}
