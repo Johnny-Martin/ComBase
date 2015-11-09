@@ -92,7 +92,9 @@ enum XMLERROR{
 	XML_ERROR_UNEXPECTEND,
 	XML_ERROR_LABELVALUE,
 	XML_MISMATCH,
+		XML_ERROR_MEMORY,
 	XML_ERROR_UNKNOWN,
+
 	XML_ERROR_COUNT
 };
 //handle the special character 
@@ -120,7 +122,11 @@ static const ENTITY entities[]={
 class XMLabel
 {
 public:
-	XMLabel():m_bLabelClose(false){}
+	XMLabel()
+		:m_bLabelClose(false)
+		,m_bLabelHeadClose(false)
+		,m_bLabelTailClose(false)
+	{}
 
 	void SetLabelClassName(const string className){m_labelClassName = className;}
 	string GetLabelClassName(){return m_labelClassName;}
@@ -133,6 +139,12 @@ public:
 
 	void SetParent(XMLabel* pParent){m_pParent = pParent;}
 	XMLabel* GetParent(){return m_pParent;}
+
+	void SetLabelHeadClose(bool bClose){m_bLabelHeadClose = bClose;}
+	bool GetLabelHeadClose(){return m_bLabelHeadClose;}
+
+	void SetLabelTailClose(bool bClose){m_bLabelTailClose = bClose;}
+	bool GetLabelTailClose(){return m_bLabelTailClose;}
 	
 	XMLERROR AddChild(XMLabel* pChild){
 		list<XMLabel>::iterator iter;
@@ -195,6 +207,8 @@ private:
 	list<XMLabel> m_pChildrenList;
 	unsigned int m_nodeBeginLineNumber;
 	bool m_bLabelClose;
+	bool m_bLabelHeadClose;
+	bool m_bLabelTailClose;
 };
 
 class XMLFile
@@ -215,6 +229,15 @@ public:
 	}
 protected:
 private:
+	XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, map<string, string> *attrMap, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLabelName(std::ifstream& inFile, string* labelNameOut, XMLabel* labelObj);
+	XMLERROR XMLFile::ReadLableTail(std::ifstream& inFile, string* tailName);
+	XMLERROR XMLFile::ReadComment(std::ifstream& inFile);
+	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel** ppLableObj);
+	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj);
+
 	XMLabel m_rootLabel;//the m_rootObj's id *must* be ""
 	
 	unsigned int m_curLineNumber;
