@@ -14,7 +14,6 @@
 using namespace std;
 using namespace tinyxml2;
 
-
 extern "C" int CCallLua ();
 
 int example_1()
@@ -67,10 +66,36 @@ void example_2()
 	XMLFile xmlFile;
 	xmlFile.LoadXmlFile(_T("SampleWnd no bom.xml"));
 }
+
+
+
+void testFun(std::ifstream& inFile)
+{
+	char tmp=0;
+	inFile.read(&tmp, sizeof(char));
+
+}
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
 	example_2();
+
+	//AA.txt µÄÄÚÈÝÎªABCDEF£¬utf8 no bom ±àÂë
+	std::ifstream inFile(_T("AA.txt"), ios::in);
+	char tmp=0;
+	
+	inFile.read(&tmp, sizeof(char));
+	inFile.read(&tmp, sizeof(char));
+	//inFile.seekg(2, ios::cur);
+	inFile.seekg(-1, ios::cur);
+	tmp=0;
+    //inFile.read(&tmp, sizeof(char));
+
+	
+	tmp=0;
+	//inFile.read(&tmp, sizeof(char));
+
+	testFun(inFile);
 	return 0;
 }
 
