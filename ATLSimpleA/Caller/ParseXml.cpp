@@ -203,12 +203,9 @@ XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut
 	{
 		inFile.read(&tmp, sizeof(char));
 		if ('>' == tmp || '/' == tmp)
-		{
-			labelObj->SetLabelHeadClose(true);
-			if (attrValue.length() > 0)
-				return XML_ERROR_UNEXPECTTAIL;
-			else
-				return XML_SUCCESS;
+		{   //attrValue must end by '\"'
+			return XML_ERROR_UNEXPECTTAIL;
+
 		}else if (!bAttrValueComplete)
 		{
 			if (0 == attrValue.length() && (!LABEL_ID_ENDLESS(tmp) || '=' == tmp))
@@ -252,7 +249,7 @@ XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, 
 	while (!inFile.eof())
 	{
 		inFile.read(&tmp, sizeof(char));
-		if ('>' == tmp || '/' == tmp)
+		if ('>' == tmp)
 		{
 			labelObj->SetLabelHeadClose(true);
 			if (attrName.length() > 0)
@@ -260,6 +257,18 @@ XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, 
 			else
 				return XML_SUCCESS;
 			
+		}else if ('/' == tmp)
+		{
+			inFile.read(&tmp, sizeof(char));
+			if ('>' != tmp)
+				return XML_ERROR_UNEXPECTTAIL;
+
+			labelObj->SetLabelHeadClose(true);
+			labelObj->SetLabelClose(true);
+			if (attrName.length() > 0)
+				return XML_ERROR_UNEXPECTTAIL;
+			else
+				return XML_SUCCESS;
 		}else if (!bAttrNameComplete)
 		{
 			if (0 == attrName.length() && !LABEL_ID_ENDLESS(tmp))
