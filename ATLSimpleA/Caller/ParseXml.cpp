@@ -587,7 +587,7 @@ XMLERROR XMLFile::ReadLableValue(std::ifstream& inFile, XMLabel* labelObj)
 	return XML_ERROR_UNKNOWN;
 }
 
-XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
+XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath, XMLabel** rootLabelObj)
 {
 	//must be ios::binary, because seekg(off, way) do not support text file
 	std::ifstream inXmlFile(pszFilePath, ios::binary);
@@ -626,8 +626,14 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 					ret = ReadLableValue(inXmlFile, newObj);
 					if (XML_SUCCESS != ret )
 						return ret;
+
+					lableObjStack.push(newObj);
+				}else if (!lableObjStack.empty())
+				{
+					XMLabel* topObj = lableObjStack.top();
+					newObj->SetParent(topObj);
+					topObj->AddChild(newObj);
 				}
-				lableObjStack.push(newObj);
 			}else if ('!' == tmpChar)
 			{
 				XMLERROR ret = ReadComment(inXmlFile);
@@ -642,6 +648,30 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath)
 
 				//pop the labelObject in stack, check the labelObject's id with labelTailName
 				//then set the labelObject to its parent
+				if (lableObjStack.empty())
+					return XML_ERROR_UNKNOWN;
+
+				XMLabel* topObj = lableObjStack.top();
+				if (NULL == topObj )
+					return XML_ERROR_UNKNOWN;
+
+				if (topObj->GetLabelClassName() != labelTailName)
+					return XML_MISMATCH;
+
+				topObj->SetLabelClose(true);
+				lableObjStack.pop();
+
+				if (!lableObjStack.empty())
+				{
+					XMLabel* parentObj =  lableObjStack.top();
+
+					topObj->SetParent(parentObj);
+					parentObj->AddChild(topObj);
+				}else
+				{
+					*rootLabelObj = topObj;
+				}
+				
 			}
 			
 		}

@@ -10,12 +10,13 @@
 #include <windows.h>
 //#include "lua_and_c.h"
 #include "ParseXml.h"
-#include "tinyxml2.h"
+//#include "tinyxml2.h"
 using namespace std;
-using namespace tinyxml2;
+//using namespace tinyxml2;
 
 extern "C" int CCallLua ();
 
+/*
 int example_1()
 {
 	tinyxml2::XMLDocument doc;
@@ -58,44 +59,27 @@ int example_1()
 
 	printf( "Both values are the same: %d and %d\n", v0, v1 );
 
-	return errid;
-}
+	return errid;   be able to parse xml,but do not support self-closed label
+}*/
 
 void example_2()
 {
 	XMLFile xmlFile;
-	xmlFile.LoadXmlFile(_T("SampleWnd no bom.xml"));
+	XMLERROR ret = xmlFile.LoadXmlFile(_T("SampleWnd no bom.xml"));
+	if (XML_SUCCESS == ret)
+	{
+		XMLabel* rootObj = xmlFile.GetRootObj();
+		cout<<rootObj->GetLabelClassName()<<endl;
+
+		//XMLabel* child = rootObj->
+	}
 }
 
-
-
-void testFun(std::ifstream& inFile)
-{
-	char tmp=0;
-	inFile.read(&tmp, sizeof(char));
-
-}
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
 	example_2();
 
-	//AA.txt µÄÄÚÈÝÎªABCDEF£¬utf8 no bom ±àÂë
-	std::ifstream inFile(_T("AA.txt"), ios::in);
-	char tmp=0;
-	
-	inFile.read(&tmp, sizeof(char));
-	inFile.read(&tmp, sizeof(char));
-	//inFile.seekg(2, ios::cur);
-	inFile.seekg(-1, ios::cur);
-	tmp=0;
-    //inFile.read(&tmp, sizeof(char));
-
-	
-	tmp=0;
-	//inFile.read(&tmp, sizeof(char));
-
-	testFun(inFile);
 	return 0;
 }
 

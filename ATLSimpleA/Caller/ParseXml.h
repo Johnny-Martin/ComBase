@@ -126,6 +126,7 @@ public:
 		:m_bLabelClose(false)
 		,m_bLabelHeadClose(false)
 		,m_bLabelTailClose(false)
+		,m_pParent(NULL)
 	{}
 
 	void SetLabelClassName(const string className){m_labelClassName = className;}
@@ -146,23 +147,23 @@ public:
 	void SetLabelTailClose(bool bClose){m_bLabelTailClose = bClose;}
 	bool GetLabelTailClose(){return m_bLabelTailClose;}
 	
+	//this few functions should be in UEObject Class
 	XMLERROR AddChild(XMLabel* pChild){
-		list<XMLabel>::iterator iter;
-		for (iter=m_pChildrenList.begin(); m_pChildrenList.end() != iter; ++iter)
-		{
-			if ((*iter).GetLabelId() == pChild->GetLabelId())
+		set<XMLabel*>::iterator iter = m_pChildrenSet.find(pChild);
+
+		if (iter != m_pChildrenSet.end()){
 				return XML_WRONG_CHILDREN_ID_RECOVER;
 		}
-		m_pChildrenList.push_back(*pChild);
+		m_pChildrenSet.insert(pChild);
 		return XML_SUCCESS;
 	}
 	XMLERROR RemoveChildById(string childId){
-		list<XMLabel>::iterator iter;
-		for (iter=m_pChildrenList.begin(); m_pChildrenList.end() != iter; ++iter)
+		set<XMLabel*>::iterator iter;
+		for (iter=m_pChildrenSet.begin(); m_pChildrenSet.end() != iter; ++iter)
 		{
-			if ((*iter).GetLabelId() == childId)
+			if ((*iter)->GetLabelId() == childId)
 			{
-				m_pChildrenList.erase(iter);
+				m_pChildrenSet.erase(iter);
 				//·¢ÊÂ¼þ
 				return XML_SUCCESS;
 			}
@@ -182,8 +183,7 @@ public:
 		return NULL;
 	}
 	
-	XMLERROR AddAttribute(map<string, string> *paraMap)
-	{
+	XMLERROR AddAttribute(map<string, string> *paraMap){
 		string attrKey;
 		string attrValue;
 		map<string, string>::iterator iter;
@@ -195,6 +195,14 @@ public:
 		}
 		return XML_SUCCESS;
 	}
+	XMLERROR HandleAttrLabel(){
+		XMLabel* attrObj ;//= m_pChildrenSet.find();
+		if (NULL == attrObj)
+			return XML_SUCCESS;
+		if (attrObj->GetLabelClassName() != "attr")
+			return XML_ERROR_UNKNOWN;
+		//list<XMLabel>::iterator iter = attrObj->
+	}
 	void SetLabelClose(bool bClose){m_bLabelClose = bClose;}
 	bool GetLabelClose(){ return m_bLabelClose;}
 private:
@@ -204,7 +212,7 @@ private:
 	string m_labelId;
 	
 	XMLabel* m_pParent;
-	list<XMLabel> m_pChildrenList;
+	set<XMLabel*> m_pChildrenSet;
 	unsigned int m_nodeBeginLineNumber;
 	bool m_bLabelClose;
 	bool m_bLabelHeadClose;
@@ -215,7 +223,7 @@ class XMLFile
 {
 public:
 	static bool CheckFileEncoding(LPCWSTR pszFilePath);
-	XMLERROR ParseXml(LPCWSTR pszFilePath);
+	XMLERROR ParseXml(LPCWSTR pszFilePath, XMLabel** rootLabelObj);
 	XMLERROR LoadXmlFile(LPCWSTR pszFilePath)
 	{
 		BOOL ret = ::PathFileExists(pszFilePath);
@@ -225,8 +233,9 @@ public:
 		if (!XMLFile::CheckFileEncoding(pszFilePath))
 			return XML_WRONG_ENCODING_TYPE;
 
-		return ParseXml(pszFilePath);
+		return ParseXml(pszFilePath, &m_pRootLabel);
 	}
+	XMLabel* GetRootObj(){return m_pRootLabel;}
 protected:
 private:
 	XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj);
@@ -239,7 +248,7 @@ private:
 	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj);
 	XMLERROR XMLFile::ReadLableValue(std::ifstream& inFile, XMLabel* labelObj);
 
-	XMLabel m_rootLabel;//the m_rootObj's id *must* be ""
+	XMLabel* m_pRootLabel;//the m_rootObj's id *must* be ""
 	
 	unsigned int m_curLineNumber;
 	string ErrorInfo;
