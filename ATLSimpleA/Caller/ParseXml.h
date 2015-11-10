@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <list>
+#include <xstring>
 
 #ifndef PARSEXML_H
 #define PARSEXML_H
@@ -233,6 +234,7 @@ public:
 		if (!XMLFile::CheckFileEncoding(pszFilePath))
 			return XML_WRONG_ENCODING_TYPE;
 
+		m_wszXmlFileName = PathFindFileNameW(pszFilePath);
 		return ParseXml(pszFilePath, &m_pRootLabel);
 	}
 	XMLabel* GetRootObj(){return m_pRootLabel;}
@@ -253,6 +255,7 @@ private:
 	unsigned int m_curLineNumber;
 	string ErrorInfo;
 	string ErrorInfoEx;
+	wstring m_wszXmlFileName;
 };
 
 #endif
