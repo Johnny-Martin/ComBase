@@ -62,6 +62,20 @@ int example_1()
 	return errid;   be able to parse xml,but do not support self-closed label
 }*/
 
+void* GreateBaseWndObject()
+{
+	return (void*)new CBaseWnd();
+}
+
+void example_3()
+{
+	//register class information
+	CObjectFactory& factortInstance = CObjectFactory::GetFactoryInstance();
+	factortInstance.RegistClass("CBaseWnd", GreateBaseWndObject);
+
+	CBaseWnd* tmpWnd = (CBaseWnd*)factortInstance.CreateObjectByClassName("CBaseWnd");
+	
+}
 void example_2()
 {
 	XMLFile xmlFile;

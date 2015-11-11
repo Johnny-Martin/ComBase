@@ -6,6 +6,41 @@
 #define PARSEXML_H
 
 using namespace std;
+
+
+/////////////////CBaseWnd version 0.1 ////////////
+// create window object from xml file
+// the attribute in xml saved in map as a class member
+// the attribute include:
+// left, top, right, bottom, leftexp, topexp, rightexp, 
+// bottomexp,title, visible, enable,
+// topmost, layered, appwnd, blur, maxenable, minenable
+// rootobjectid, 
+//
+class CBaseWnd
+{
+public:
+	CBaseWnd(){ InitAttrMap(); }
+	bool SetAttr(string key, string value);
+	bool GetAttr(string key, string* value);
+	static bool CheckAttrName(string strName){ return (m_attrNameSet.end() != m_attrNameSet.find(strName)) ? true:false;}
+	static bool CheckEventName(string strName){ return (m_attrNameSet.end() != m_eventNameSet.find(strName)) ? true:false;}
+private:
+	static set<string> InitAttrNameSet();
+	static set<string> InitEventNameSet();
+
+	static set<string> m_attrNameSet;
+	static set<string> m_eventNameSet;
+
+	bool InitAttrMap();
+	map<string, string> m_attrMap;
+	map<string, string> m_eventMap;	
+};
+
+//set<string> CBaseWnd::InitAttrNameMap()
+//
+
+//set<string> CBaseWnd::InitEventNameMap()
 class CXmlParser
 {
 public:
@@ -16,8 +51,26 @@ private:
 BOOL CheckFileEncoding(LPCWSTR pszFilePath);
 
 typedef void* (*CreateObjectCallBack)(void);
+typedef std::map<string, CreateObjectCallBack> _ClassMapType;
 
-class CObjectFactory//µ¥Àý¹¤³§
+template <class T>
+void* GreateObject()
+{
+	return (void*) new T();
+}
+
+#define REFLECTION_DECLARE_BEGIN() \
+	private:\
+	const static _ClassMapType::value_type* WINAPI _GetInitValue() {\
+	static const _ClassMapType::value_type initValue[] = {
+
+#define REGISTER_CLASS(className) \
+	_ClassMapType::value_type(#className, GreateObject<className>),
+
+#define REFLECTION_DECLARE_END() \
+	};return initValue; }
+
+class CObjectFactory//singleton object factory
 {
 public:
 	virtual ~CObjectFactory(){}
@@ -40,43 +93,174 @@ public:
 		return m_factoryInstance;
 	}
 
+	REFLECTION_DECLARE_BEGIN()
+		REGISTER_CLASS(CBaseWnd)
+	REFLECTION_DECLARE_END()
+
 private:
-	CObjectFactory(){}
+	CObjectFactory(){
+		const _ClassMapType::value_type* initValue = CObjectFactory::_GetInitValue();
+		m_classMap = _ClassMapType(initValue, initValue + (sizeof(initValue) / sizeof(_ClassMapType::value_type)));
+
+	}
 	std::map<string, CreateObjectCallBack> m_classMap;
 };
 
-/////////////////CBaseWnd version 0.1 ////////////
-// create window object from xml file
-// the attribute in xml saved in map as a class member
-// the attribute include:
-// left, top, right, bottom, leftexp, topexp, rightexp, 
-// bottomexp,title, visible, enable,
-// topmost, layered, appwnd, blur, maxenable, minenable
-// rootobjectid, 
-//
-class CBaseWnd
-{
-public:
-	CBaseWnd(){ InitAttrMap(); }
-	bool SetAttr(string key, string value);
-	bool GetAttr(string key, string* value);
-	static bool CheckAttrName(string strName){ return (m_attrNameSet.end() != m_attrNameSet.find(strName)) ? true:false;}
-	static bool CheckEventName(string strName){ return (m_attrNameSet.end() != m_eventNameSet.find(strName)) ? true:false;}
-private:
-	static set<string> InitAttrNameSet();
-	static set<string> InitEventNameSet();
-	
-	static set<string> m_attrNameSet;
-	static set<string> m_eventNameSet;
 
-	bool InitAttrMap();
-	map<string, string> m_attrMap;
-	map<string, string> m_eventMap;	
-};
 
-//set<string> CBaseWnd::InitAttrNameMap()
-//
-//set<string> CBaseWnd::InitEventNameMap()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 enum XMLERROR{
 	XML_SUCCESS = 0,
 	XML_WRONG_FILENOTEXISTS,
