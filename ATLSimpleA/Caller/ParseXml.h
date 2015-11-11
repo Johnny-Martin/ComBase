@@ -71,7 +71,8 @@ void* GreateObject()
 	};m_initialClassInfoArraySize = sizeof(initValue);\
 	return initValue; }
 
-class CObjectFactory//singleton object factory
+//singleton object factory
+class CObjectFactory
 {
 public:
 	virtual ~CObjectFactory(){}
@@ -93,7 +94,8 @@ public:
 		static CObjectFactory m_factoryInstance;
 		return m_factoryInstance;
 	}
-
+	
+	//the class like CBaseWnd must be declared before CObjectFactory
 	REFLECTION_DECLARE_BEGIN()
 		REGISTER_CLASS(CBaseWnd)
 	REFLECTION_DECLARE_END()
