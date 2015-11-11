@@ -240,15 +240,15 @@ public:
 	XMLabel* GetRootObj(){return m_pRootLabel;}
 protected:
 private:
-	XMLERROR XMLFile::ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLabelAttr(std::ifstream& inFile, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLabelName(std::ifstream& inFile, string* labelNameOut, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLableTail(std::ifstream& inFile, string* tailName);
-	XMLERROR XMLFile::ReadComment(std::ifstream& inFile);
-	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel** ppLableObj);
-	XMLERROR XMLFile::ReadLableHead(std::ifstream& inFile, XMLabel* labelObj);
-	XMLERROR XMLFile::ReadLableValue(std::ifstream& inFile, XMLabel* labelObj);
+	XMLERROR ReadLabelAttrValue(std::ifstream& inFile, string* attrValueOut, XMLabel* labelObj);
+	XMLERROR ReadLabelAttrName(std::ifstream& inFile, string* attrNameOut, XMLabel* labelObj);
+	XMLERROR ReadLabelAttr(std::ifstream& inFile, XMLabel* labelObj);
+	XMLERROR ReadLabelName(std::ifstream& inFile, string* labelNameOut, XMLabel* labelObj);
+	XMLERROR ReadLableTail(std::ifstream& inFile, string* tailName);
+	XMLERROR ReadComment(std::ifstream& inFile);
+	XMLERROR ReadLableHead(std::ifstream& inFile, XMLabel** ppLableObj);
+	XMLERROR ReadLableHead(std::ifstream& inFile, XMLabel* labelObj);
+	XMLERROR ReadLableValue(std::ifstream& inFile, XMLabel* labelObj);
 
 	XMLabel* m_pRootLabel;//the m_rootObj's id *must* be ""
 	
