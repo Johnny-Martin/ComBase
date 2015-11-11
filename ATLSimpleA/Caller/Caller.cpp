@@ -71,9 +71,16 @@ void example_3()
 {
 	//register class information
 	CObjectFactory& factortInstance = CObjectFactory::GetFactoryInstance();
-	factortInstance.RegistClass("CBaseWnd", GreateBaseWndObject);
+	//factortInstance.RegistClass("CBaseWnd", GreateBaseWndObject);
 
 	CBaseWnd* tmpWnd = (CBaseWnd*)factortInstance.CreateObjectByClassName("CBaseWnd");
+	if (NULL == tmpWnd)
+	{
+		int i = 1;
+	}else
+	{
+		int x= 1;
+	}
 	
 }
 void example_2()
@@ -92,7 +99,8 @@ void example_2()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
-	example_2();
+	//example_2();
+	example_3();
 
 	return 0;
 }

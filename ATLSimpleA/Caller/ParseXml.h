@@ -51,7 +51,7 @@ private:
 BOOL CheckFileEncoding(LPCWSTR pszFilePath);
 
 typedef void* (*CreateObjectCallBack)(void);
-typedef std::map<string, CreateObjectCallBack> _ClassMapType;
+typedef std::map<string, CreateObjectCallBack> _ClassInfoMapType;
 
 template <class T>
 void* GreateObject()
@@ -61,14 +61,15 @@ void* GreateObject()
 
 #define REFLECTION_DECLARE_BEGIN() \
 	private:\
-	const static _ClassMapType::value_type* WINAPI _GetInitValue() {\
-	static const _ClassMapType::value_type initValue[] = {
+	const static _ClassInfoMapType::value_type* WINAPI _GetInitValue() {\
+		static const _ClassInfoMapType::value_type initValue[] = {
 
 #define REGISTER_CLASS(className) \
-	_ClassMapType::value_type(#className, GreateObject<className>),
+	_ClassInfoMapType::value_type(#className, GreateObject<className>),
 
 #define REFLECTION_DECLARE_END() \
-	};return initValue; }
+	};m_initialClassInfoArraySize = sizeof(initValue);\
+	return initValue; }
 
 class CObjectFactory//singleton object factory
 {
@@ -76,16 +77,16 @@ public:
 	virtual ~CObjectFactory(){}
 	void* CreateObjectByClassName(string strClassName)
 	{
-		map<string, CreateObjectCallBack>::const_iterator iter = m_classMap.find(strClassName);
+		_ClassInfoMapType::const_iterator iter = m_classInfoMap->find(strClassName);
 		
-		if (m_classMap.end() == iter)
+		if (m_classInfoMap->end() == iter)
 			return NULL;
 		else
 			return iter->second();
 	}
 	void RegistClass(string strClassName, CreateObjectCallBack callBackFun)
 	{
-		m_classMap.insert(std::pair<string, CreateObjectCallBack>(strClassName, callBackFun));
+		m_classInfoMap->insert(std::pair<string, CreateObjectCallBack>(strClassName, callBackFun));
 	}
 	static CObjectFactory& GetFactoryInstance()
 	{
@@ -99,167 +100,17 @@ public:
 
 private:
 	CObjectFactory(){
-		const _ClassMapType::value_type* initValue = CObjectFactory::_GetInitValue();
-		m_classMap = _ClassMapType(initValue, initValue + (sizeof(initValue) / sizeof(_ClassMapType::value_type)));
+		const _ClassInfoMapType::value_type* initValueRet = CObjectFactory::_GetInitValue();
+		
+		unsigned int y = sizeof(_ClassInfoMapType::value_type);
+		unsigned int initValueLen = m_initialClassInfoArraySize / y;
+
+		m_classInfoMap = new _ClassInfoMapType(initValueRet, initValueRet + initValueLen);
 
 	}
-	std::map<string, CreateObjectCallBack> m_classMap;
+	 _ClassInfoMapType* m_classInfoMap;
+	static unsigned int m_initialClassInfoArraySize;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 enum XMLERROR{
 	XML_SUCCESS = 0,

@@ -2,6 +2,7 @@
 #include "ParseXml.h"
 using namespace std;
 
+unsigned int CObjectFactory::m_initialClassInfoArraySize = 0;
 static const char HORIZONTAL_TAB		= (char)0x09;
 static const char HT = HORIZONTAL_TAB;
 static const char LINE_FEED				= (char)0x0a;
