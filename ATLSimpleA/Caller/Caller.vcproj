@@ -183,6 +183,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Render.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ResManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -214,6 +222,14 @@
 			</File>
 			<File
 				RelativePath=".\ParseXml.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Render.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ResManager.h"
 				>
 			</File>
 			<File
