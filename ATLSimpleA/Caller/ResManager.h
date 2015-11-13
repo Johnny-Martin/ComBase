@@ -10,7 +10,7 @@ enum RESERROE{
 	RES_ERROR_FILE_NOT_FOUND,
 	RES_ERROR_ILLEGAL_FILE_TYPE,
 	RES_ERROR_PARSE_FILE_FALIED,
-
+	RES_ERROR_UNKNOWN,
 	RES_ERROR_COUNT
 };
 //'R' is short for "Render"
@@ -96,24 +96,24 @@ private:
 class ResManager
 {
 public:
-	ResManager();
+	ResManager(){};
 	ResManager(LPWSTR szResPath){
 		SetResPath(szResPath);
 	}
-	RESERROE SetResPath(LPWSTR szResPath){
-		if (::PathFileExists(szResPath))
+	RESERROE SetResPath(LPWSTR wszResPath){
+		if (::PathFileExists(wszResPath))
 		{
-			m_szResPath = szResPath;
+			m_wszResPath = wszResPath;
 			return RES_SUCCESS;
 		}
 		return RES_ERROR_FILE_NOT_FOUND;
 	}
 	
-	RESERROE GetResPicHandle(LPSTR szResID);
+	RESERROE GetResPicHandle(LPSTR szResID, RPicture** hRes);
 protected:
 private:
 	RESERROE GetPicPathByID(LPSTR szResID);
-	string m_szResPath;
+	wstring m_wszResPath;
 	map<string, RPicture*> m_resID2HandleMap;
 };
 #endif

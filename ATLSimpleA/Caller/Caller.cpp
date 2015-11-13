@@ -11,6 +11,9 @@
 //#include "lua_and_c.h"
 #include "ParseXml.h"
 //#include "tinyxml2.h"
+
+#include "ResManager.h"
+
 using namespace std;
 //using namespace tinyxml2;
 
@@ -96,12 +99,19 @@ void example_2()
 	}
 }
 
+void example_4()
+{
+	ResManager resManager;
+	RPicture *pic;
+	resManager.GetResPicHandle("texture.nine.customRectBkg", &pic);
+}
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
 	//example_2();
-	example_3();
+	//example_3();
 
+	example_4();
 	return 0;
 }
 
