@@ -101,7 +101,7 @@ void example_2()
 
 void example_4()
 {
-	ResManager resManager;
+	ResManager resManager(L"E:\\Aiss\\¿­×Ó»éÀñ¾«Ñ¡");
 	RPicture *pic;
 	resManager.GetResPicHandle("texture.nine.customRectBkg", &pic);
 }

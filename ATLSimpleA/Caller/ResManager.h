@@ -18,9 +18,12 @@ enum RESERROE{
 class RPicture
 {
 public:
-	RPicture();
+	RPicture():m_hResHandle(NULL)
+			  ,m_szResID("")
+			  ,m_zsResTypeInfo("")
+	{};
 protected:
-	virtual RESERROE LoadResource(LPSTR szResPath) = 0;
+	virtual RESERROE LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROE Draw() = 0;
 private:
 	HBITMAP m_hResHandle;//??????
@@ -32,8 +35,10 @@ class RImage: public RPicture
 {
 public:
 	RImage();
-	RImage(LPSTR szResPath);
-	RESERROE LoadResource(LPSTR szResPath);
+	RImage(LPCWSTR wszResPath){
+		LoadResource(wszResPath);
+	}
+	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw();
 protected:
 private:
@@ -56,8 +61,10 @@ class RTexture: public RPicture
 {
 public:
 	RTexture();
-	RTexture(LPSTR szResPath);
-	RESERROE LoadResource(LPSTR szResPath);
+	RTexture(LPCWSTR wszResPath){
+		LoadResource(wszResPath);
+	};
+	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw();
 protected:
 private:
@@ -86,9 +93,11 @@ class RPicList: public RPicture
 {
 public:
 	RPicList();
-	RPicList(LPSTR szResPath);
-	RESERROE LoadResource(LPSTR szResPath);
-	RESERROE Draw(){};
+	RPicList(LPCWSTR wszResPath){
+		LoadResource(wszResPath);
+	}
+	RESERROE LoadResource(LPCWSTR wszResPath);
+	RESERROE Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
 private:
 };
@@ -101,18 +110,17 @@ public:
 		SetResPath(szResPath);
 	}
 	RESERROE SetResPath(LPWSTR wszResPath){
+		m_wszResPath = wszResPath;
 		if (::PathFileExists(wszResPath))
-		{
-			m_wszResPath = wszResPath;
 			return RES_SUCCESS;
-		}
+		
 		return RES_ERROR_FILE_NOT_FOUND;
 	}
 	
 	RESERROE GetResPicHandle(LPSTR szResID, RPicture** hRes);
 protected:
 private:
-	RESERROE GetPicPathByID(LPSTR szResID);
+	wstring GetPicPathByID(LPSTR szResID);
 	wstring m_wszResPath;
 	map<string, RPicture*> m_resID2HandleMap;
 };
