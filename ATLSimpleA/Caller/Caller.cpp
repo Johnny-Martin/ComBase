@@ -101,9 +101,9 @@ void example_2()
 
 void example_4()
 {
-	ResManager resManager(L"E:\\Aiss\\凯子婚礼精选");
+	ResManager resManager(L"E:\\A iss\\凯子婚礼精选");
 	RPicture *pic;
-	resManager.GetResPicHandle("texture.nine.customRectBkg", &pic);
+	resManager.GetResPicHandle("texturelist.nine.customRectBkg.3", &pic);
 }
 int _tmain(int argc, _TCHAR* argv[])
 {

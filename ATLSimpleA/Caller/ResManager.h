@@ -87,7 +87,7 @@ private:
 //*			......
 //*		 </image>
 //the last part of resid must be a number, the index of pic in picture list
-//the texture's dividing line's color *must* be (128,0,128),different from 
+//the texture's dividing line's color *must* be (127,0,127),different from 
 //texture's dividing line, and *one* pixel wide
 class RPicList: public RPicture
 {
@@ -117,10 +117,10 @@ public:
 		return RES_ERROR_FILE_NOT_FOUND;
 	}
 	
-	RESERROE GetResPicHandle(LPSTR szResID, RPicture** hRes);
+	RESERROE GetResPicHandle(LPCSTR szResID, RPicture** hRes);
 protected:
 private:
-	wstring GetPicPathByID(LPSTR szResID);
+	wstring GetPicPathByID(LPCSTR szResID);
 	wstring m_wszResPath;
 	map<string, RPicture*> m_resID2HandleMap;
 };

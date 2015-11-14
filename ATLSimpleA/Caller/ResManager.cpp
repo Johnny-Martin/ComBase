@@ -19,10 +19,20 @@ RESERROE RTexture::Draw()
 }
 RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
 {
+	//detect the dividing line(RGB: 127,0,127)
+	//++++++++++++++++++++++++++++++++++++++++++
+	wstring wszFileName;
+	wszFileName = ::PathFindFileName(wszResPath);
+	std::size_t iBeginPos = wszFileName.find(L"texturelist");
+	if (0 == iBeginPos)
+	{
+	}
+	std::size_t iBeginPosEx = wszFileName.find(L"imagelist");
+	
 	return RES_SUCCESS;
 }
 
-wstring ResManager::GetPicPathByID(LPSTR szResID)
+wstring ResManager::GetPicPathByID(LPCSTR szResID)
 {
 	LPWSTR wszPath = new WCHAR[MAX_PATH];
 
@@ -45,7 +55,7 @@ wstring ResManager::GetPicPathByID(LPSTR szResID)
 	return wstrRet;
 }
 
-RESERROE ResManager::GetResPicHandle(LPSTR szResID, RPicture** hRes)
+RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 {
 	map<string, RPicture*>::iterator iter = m_resID2HandleMap.find(szResID);
 	if (m_resID2HandleMap.end() != iter)
@@ -54,48 +64,76 @@ RESERROE ResManager::GetResPicHandle(LPSTR szResID, RPicture** hRes)
 		return RES_SUCCESS;
 	}
 
-	wstring resFilePath = GetPicPathByID(szResID);
-	if (!::PathFileExists(resFilePath.c_str()))
-		return RES_ERROR_FILE_NOT_FOUND;
-	
+	wstring resFilePath;
 	string strResID = szResID;
-	std::size_t iBeginPos = strResID.find("texture");
-	if (0 == iBeginPos)
+	//list's strResID must has .index at the end
+	std::size_t iBeginPos = strResID.find("texturelist");
+	std::size_t iBeginPosEx = strResID.find("imagelist");
+	if (0 == iBeginPos || 0 == iBeginPosEx)
 	{
-		RTexture* textureObj = new RTexture(resFilePath.c_str());
-		m_resID2HandleMap.insert(pair<string, RTexture*>(szResID, textureObj));
+		//get the index section
+		std::size_t iResIDLen = strlen(szResID);
+		unsigned int iLastDotPos = iResIDLen;
+		for (; iLastDotPos>0; --iLastDotPos)
+		{
+			if ('.' == szResID[iLastDotPos])
+				break;
+		}
+		
+		bool bLastSectionCheck = true;
+		int picIndex = 0;
+		for (unsigned int i=iLastDotPos + 1; i<iResIDLen; ++i)
+		{
+			if (szResID[i] > '9' || szResID[i] < '0')
+			{
+				bLastSectionCheck = false;
+				break;
+			}else
+			{
+				picIndex = picIndex*10 + szResID[i] - '0';
+			}
+		}
 
-		*hRes = textureObj;
-		return RES_SUCCESS;
-	}
+		if (!bLastSectionCheck)
+			return RES_ERROR_ILLEGAL_ID;
 
-	iBeginPos = strResID.find("image");
-	if (0 == iBeginPos)
-	{
-		RImage* imageObj = new RImage(resFilePath.c_str());
-		m_resID2HandleMap.insert(pair<string, RImage*>(szResID, imageObj));
+		string strRealResId;
+		for (unsigned int i=0; i<iLastDotPos; ++i)
+			strRealResId.append(sizeof(char), szResID[i]);
 
-		*hRes = imageObj;
-		return RES_SUCCESS;
-	}
+		resFilePath = GetPicPathByID(strRealResId.c_str());
+		if (!::PathFileExists(resFilePath.c_str()))
+			return RES_ERROR_FILE_NOT_FOUND;
 
-	iBeginPos = strResID.find("texturelist");
-	if (0 == iBeginPos)
-	{
 		RPicList* picListObj = new RPicList(resFilePath.c_str());
+		
+		//insert each of texture into map
+		//++++++++++++++++++++++++++++++++
 		m_resID2HandleMap.insert(pair<string, RPicList*>(szResID, picListObj));
 
 		*hRes = picListObj;
 		return RES_SUCCESS;
 	}
 
-	iBeginPos = strResID.find("imagelist");
-	if (0 == iBeginPos)
+	iBeginPos = strResID.find("texture");
+	iBeginPosEx = strResID.find("image");
+	if (0 == iBeginPos || 0 == iBeginPosEx)
 	{
-		RPicList* picListObj = new RPicList(resFilePath.c_str());
-		m_resID2HandleMap.insert(pair<string, RPicList*>(szResID, picListObj));
+		resFilePath = GetPicPathByID(szResID);
+		if (!::PathFileExists(resFilePath.c_str()))
+			return RES_ERROR_FILE_NOT_FOUND;
 
-		*hRes = picListObj;
+		RPicture* picObj = NULL;
+		if (0 == iBeginPos)
+		{
+			picObj = new RTexture(resFilePath.c_str());
+		}else
+		{
+			picObj = new RImage(resFilePath.c_str());
+		}
+		m_resID2HandleMap.insert(pair<string, RPicture*>(szResID, picObj));
+
+		*hRes = picObj;
 		return RES_SUCCESS;
 	}
 
