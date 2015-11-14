@@ -110,7 +110,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//example_1();
 	//example_2();
 	//example_3();
-
+	ResManager::CheckPngFileHead(L"E:\\A iss\\¿­×Ó»éÀñ¾«Ñ¡\\texturelist.nine.customRectBkg.png");
 	example_4();
 	return 0;
 }

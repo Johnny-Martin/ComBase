@@ -54,7 +54,21 @@ wstring ResManager::GetPicPathByID(LPCSTR szResID)
 	wstrRet += L".png";
 	return wstrRet;
 }
-
+bool ResManager::CheckPngFileHead(LPWSTR wszFilePath)
+{
+	//PNG file head: 89 50 4E 47 0D 0A 1A 0A
+	BYTE pngFileHead[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+	
+	std::ifstream inPngFile(wszFilePath, ios::binary);
+	BYTE value = 0;
+	for (int i=0; i<sizeof(pngFileHead)/sizeof(BYTE); ++i)
+	{
+		inPngFile.read((char*)&value, sizeof(BYTE));
+		if (value != pngFileHead[i])
+			return false;
+	}
+	return true;
+}
 RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 {
 	map<string, RPicture*>::iterator iter = m_resID2HandleMap.find(szResID);

@@ -116,7 +116,7 @@ public:
 		
 		return RES_ERROR_FILE_NOT_FOUND;
 	}
-	
+	static bool CheckPngFileHead(LPWSTR wszFilePath);
 	RESERROE GetResPicHandle(LPCSTR szResID, RPicture** hRes);
 protected:
 private:
