@@ -24,4 +24,5 @@
 #include <stack>
 #include <map>
 
+#define RGBA(r,g,b,a)  ((COLORREF) (((DWORD)(BYTE)(a))<<24 | (RGB(r,g,b))))
 // TODO: reference additional headers your program requires here
