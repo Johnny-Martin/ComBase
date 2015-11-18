@@ -34,7 +34,7 @@ public:
 	{
 		//m_rowPointers is allocated by malloc() in function png_create_read_struct(),
 		//thus release with free()
-		for (int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+		for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 			free(m_rowPointers[rowIndex]);
 		
 		free(m_rowPointers);
@@ -46,8 +46,8 @@ protected:
 	virtual RESERROE LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROE Draw() = 0;
 	RESERROE ReadPngFile(LPCWSTR wszFilePath);
-
-	//set public authority for test
+	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
+	
 	png_uint_32 m_pngWidth;
 	png_uint_32 m_pngHeight;
 	png_byte    m_colorType;
@@ -94,12 +94,18 @@ class RTexture: public RPicture
 public:
 	RTexture();
 	RTexture(LPCWSTR wszResPath){
-		LoadResource(wszResPath);
+		//LoadResource(wszResPath);
+		ReadPngFile(wszResPath);
 	};
 	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw();
 protected:
+	RESERROE DetectPurpleLine();
 private:
+	//vertical dividing line's position in horizontal direction
+	vector<unsigned int> m_arrDivideLinePosH;
+	//horizontal dividing line's position in vertical direction
+	vector<unsigned int> m_arrDivideLinePosV;
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
@@ -124,14 +130,23 @@ private:
 class RPicList: public RPicture
 {
 public:
-	RPicList();
-	RPicList(LPCWSTR wszResPath){
-		LoadResource(wszResPath);
+	RPicList():m_purpleLineColor(RGBA(127,0,127,255))
+	{};
+	RPicList(LPCWSTR wszResPath):m_purpleLineColor(RGBA(127,0,127,255))
+	{
+		//LoadResource(wszResPath);
+		ReadPngFile(wszResPath);
+		DetectPurpleLine();
 	}
 	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
+	RESERROE DetectPurpleLine();
 private:
+	//vertical dividing line's position in horizontal direction
+	vector<unsigned int> m_arrDivideLinePosH;
+	const COLORREF m_purpleLineColor;
+	
 };
 
 class ResManager

@@ -2,6 +2,19 @@
 #include "ResManager.h"
 #include "png.h"
 
+bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineColor)
+{
+	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+	{
+		png_byte* row = m_rowPointers[rowIndex];
+		png_byte* ptr = &(row[horizontalPos*4]);
+		
+		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], ptr[3]);
+		if (lineColor != pixelColor)
+			return false;
+	}
+	return true;
+}
 RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
@@ -53,10 +66,10 @@ RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	m_rowPointers = (png_bytep*) malloc(sizeof(png_bytep) * m_pngHeight);
 	//m_rowPointers = new png_bytep[(sizeof(png_bytep) * m_pngHeight)];
 	
-	for (int y=0; y<m_pngHeight; y++)
+	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
 		png_uint_32 size = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
-		m_rowPointers[y] = (png_byte*) malloc(size);
+		m_rowPointers[rowIndex] = (png_byte*) malloc(size);
 	}
 
 	png_read_image(m_pngStructPtr, m_rowPointers);
@@ -74,8 +87,13 @@ RESERROE RImage::Draw()
 }
 RESERROE RTexture::LoadResource(LPCWSTR wszResPath)
 {
-	//detect the dividing line(RGB: 255,0,255)
-	//++++++++++++++++++++++++++++++++++++++++++
+	return RES_SUCCESS;
+}
+//detect the dividing line(RGB: 255,0,255)
+RESERROE RTexture::DetectPurpleLine()
+{
+	//before calling this function,make sure that
+	//png file must has been loaded to memory successfully.
 
 	return RES_SUCCESS;
 }
@@ -85,7 +103,6 @@ RESERROE RTexture::Draw()
 }
 RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
 {
-	//detect the dividing line(RGB: 127,0,127)
 	//++++++++++++++++++++++++++++++++++++++++++
 	wstring wszFileName;
 	wszFileName = ::PathFindFileName(wszResPath);
@@ -98,6 +115,27 @@ RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
 	return RES_SUCCESS;
 }
 
+//detect the dividing line(RGB: 127,0,127)
+//a pictrue list's dividing line must be vertical
+RESERROE RPicList::DetectPurpleLine()
+{
+	//before calling this function,make sure that
+	//png file must has been loaded to memory successfully.
+	png_byte* pixelDataPtr = NULL;
+	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
+	{
+		pixelDataPtr = &(m_rowPointers[0][columnIndex*4]);
+		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], pixelDataPtr[3]);
+		if (m_purpleLineColor == pixelColor)
+		{
+			if (IsVerticalLine(columnIndex, m_purpleLineColor))
+			{
+				m_arrDivideLinePosH.push_back(columnIndex);
+			}
+		}
+	}
+	return RES_SUCCESS;
+}
 wstring ResManager::GetPicPathByID(LPCSTR szResID)
 {
 	LPWSTR wszPath = new WCHAR[MAX_PATH];
