@@ -266,7 +266,7 @@ void process_file(void)
 
 void example_5()//test for libpng
 {
-	RImage picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\ÄãºÃhover.png");
+	RPicList picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texturelist.png");
 	//picObj.ReadPngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\ÄãºÃhover.png");
 	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover.png");
 	//process_file();
