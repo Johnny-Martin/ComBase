@@ -122,6 +122,7 @@ RESERROE RPicList::DetectPurpleLine()
 	//before calling this function,make sure that
 	//png file must has been loaded to memory successfully.
 	png_byte* pixelDataPtr = NULL;
+	unsigned int lastLineColumnIndex = 0;
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
 		pixelDataPtr = &(m_rowPointers[0][columnIndex*4]);
@@ -132,6 +133,34 @@ RESERROE RPicList::DetectPurpleLine()
 			{
 				m_arrDivideLinePosH.push_back(columnIndex);
 			}
+		}
+	}
+	return RES_SUCCESS;
+}
+RESERROE RPicList::CreatePicFromMem()
+{
+	if (m_arrDivideLinePosH.size() <= 0)
+		return RES_ERROR_UNKNOWN;
+
+	unsigned int lastDivideLinePos = 0;
+	png_bytep* pngDataPtr = NULL;
+	vector<unsigned int>::iterator iter = m_arrDivideLinePosH.begin();
+	for (unsigned int verticalLineIndex = 0; verticalLineIndex < m_arrDivideLinePosH.size(); ++verticalLineIndex)
+	{
+		unsigned int curDivideLinePos = m_arrDivideLinePosH[verticalLineIndex];
+		
+		pngDataPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
+		for (unsigned int rowIndex=0; rowIndex < m_pngHeight; ++rowIndex)
+		{
+			//lost last pic
+			pngDataPtr[verticalLineIndex] = (png_byte*) malloc((curDivideLinePos - lastDivideLinePos) * sizeof(png_byte));
+			
+			//copy png data
+			for (unsigned int columnIndex=lastDivideLinePos; columnIndex < curDivideLinePos; ++columnIndex)
+			{
+				pngDataPtr[rowIndex][columnIndex] = m_rowPointers[rowIndex][lastDivideLinePos + columnIndex];
+			}
+
 		}
 	}
 	return RES_SUCCESS;

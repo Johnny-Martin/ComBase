@@ -130,22 +130,25 @@ private:
 class RPicList: public RPicture
 {
 public:
-	RPicList():m_purpleLineColor(RGBA(127,0,127,255))
-	{};
+	RPicList():m_purpleLineColor(RGBA(127,0,127,255)){};
+
 	RPicList(LPCWSTR wszResPath):m_purpleLineColor(RGBA(127,0,127,255))
 	{
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 		DetectPurpleLine();
+		CreatePicFromMem();
 	}
 	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
 	RESERROE DetectPurpleLine();
+	RESERROE CreatePicFromMem();
 private:
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrDivideLinePosH;
 	const COLORREF m_purpleLineColor;
+	map<unsigned int, RPicture*> m_picIndex2HandleMap;
 	
 };
 
