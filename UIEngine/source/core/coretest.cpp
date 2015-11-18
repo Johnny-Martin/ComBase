@@ -172,8 +172,12 @@ void read_png_file(char* file_name)
 		abort_("[read_png_file] Error during read_image");
 
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+	
 	for (y=0; y<height; y++)
-		row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+	{
+		png_uint_32 size = png_get_rowbytes(png_ptr,info_ptr);
+		row_pointers[y] = (png_byte*) malloc(size);
+	}
 
 	png_read_image(png_ptr, row_pointers);
 
@@ -239,14 +243,14 @@ void write_png_file(char* file_name)
 void process_file(void)
 {
 	if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
-		abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
-		"(lacks the alpha channel)");
+		abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA ""(lacks the alpha channel)");
 
 	if (png_get_color_type(png_ptr, info_ptr) != PNG_COLOR_TYPE_RGBA)
 		abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
 		PNG_COLOR_TYPE_RGBA, png_get_color_type(png_ptr, info_ptr));
 
-	for (y=0; y<height; y++) {
+	for (y=0; y<height; y++) 
+	{
 		png_byte* row = row_pointers[y];
 		for (x=0; x<width; x++) {
 			png_byte* ptr = &(row[x*4]);
@@ -262,11 +266,14 @@ void process_file(void)
 
 void example_5()//test for libpng
 {
-	read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover.png");
-	process_file();
-	write_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover_copy.png");
+	RImage picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\你好hover.png");
+	//picObj.ReadPngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\你好hover.png");
+	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover.png");
+	//process_file();
+	//write_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover_copy.png");
 	int i = 1;
 }
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
@@ -275,6 +282,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//ResManager::CheckPngFileHead(L"E:\\A iss\\凯子婚礼精选\\texturelist.nine.customRectBkg.png");
 	//example_4();
 	example_5();
+
 	return 0;
 }
 
