@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "png.h"
 
 using namespace std;
 
@@ -20,23 +21,54 @@ class RPicture
 public:
 	RPicture():m_hResHandle(NULL)
 			  ,m_szResID("")
-			  ,m_zsResTypeInfo("")
+			  ,m_szResTypeInfo("")
+			  ,m_pngWidth(0)
+			  ,m_pngHeight(0)
+			  ,m_colorType(0)
+			  ,m_bitDepth(0)
+			  ,m_rowPointers(NULL)
+			  ,m_pngStructPtr(NULL)
+			  ,m_pngInfoPtr(NULL)
 	{};
+	virtual ~RPicture()
+	{
+		//m_rowPointers is allocated by malloc() in function png_create_read_struct(),
+		//thus release with free()
+		for (int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+			free(m_rowPointers[rowIndex]);
+		
+		free(m_rowPointers);
+		cout<<"free m_rowPointers done"<<endl;
+	}
+	
+
 protected:
 	virtual RESERROE LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROE Draw() = 0;
+	RESERROE ReadPngFile(LPCWSTR wszFilePath);
+
+	//set public authority for test
+	png_uint_32 m_pngWidth;
+	png_uint_32 m_pngHeight;
+	png_byte    m_colorType;
+	png_byte    m_bitDepth;
+	png_bytep * m_rowPointers; //In fact, m_rowPointers is a two-dimensional array
+	png_structp m_pngStructPtr;
+	png_infop   m_pngInfoPtr;
+
 private:
 	HBITMAP m_hResHandle;//??????
 	string m_szResID;
-	string m_zsResTypeInfo;
+	string m_szResTypeInfo;
 };
 
 class RImage: public RPicture
 {
 public:
-	RImage();
+	RImage(){};
 	RImage(LPCWSTR wszResPath){
-		LoadResource(wszResPath);
+		//LoadResource(wszResPath);
+		ReadPngFile(wszResPath);
 	}
 	RESERROE LoadResource(LPCWSTR wszResPath);
 	RESERROE Draw();

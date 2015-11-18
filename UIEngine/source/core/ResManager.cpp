@@ -1,6 +1,69 @@
 #include "stdafx.h"
 #include "ResManager.h"
+#include "png.h"
 
+RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
+{
+	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
+	char* file_name = new char[multiByteLen + 1];
+	WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, file_name, multiByteLen, NULL, NULL);
+
+	/* open file and test for it being a png */
+	FILE *fp = fopen(file_name, "rb");
+	if (!fp)
+		return RES_ERROR_FILE_NOT_FOUND;
+
+	unsigned char header[8];    // 8 is the maximum size that can be checked
+	fread(header, 1, 8, fp);
+	if (png_sig_cmp(header, 0, 8))
+		return RES_ERROR_ILLEGAL_FILE_TYPE;
+
+
+	/* initialize stuff */
+	m_pngStructPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!m_pngStructPtr)
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	m_pngInfoPtr = png_create_info_struct(m_pngStructPtr);
+	if (!m_pngInfoPtr)
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	if (setjmp(png_jmpbuf(m_pngStructPtr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_init_io(m_pngStructPtr, fp);
+	png_set_sig_bytes(m_pngStructPtr, 8);
+
+	png_read_info(m_pngStructPtr, m_pngInfoPtr);
+
+	m_pngWidth = png_get_image_width(m_pngStructPtr, m_pngInfoPtr);
+	m_pngHeight = png_get_image_height(m_pngStructPtr, m_pngInfoPtr);
+	m_colorType = png_get_color_type(m_pngStructPtr, m_pngInfoPtr);
+	m_bitDepth = png_get_bit_depth(m_pngStructPtr, m_pngInfoPtr);
+
+	int number_of_passes = png_set_interlace_handling(m_pngStructPtr);
+	png_read_update_info(m_pngStructPtr, m_pngInfoPtr);
+
+
+	/* read file */
+	if (setjmp(png_jmpbuf(m_pngStructPtr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	m_rowPointers = (png_bytep*) malloc(sizeof(png_bytep) * m_pngHeight);
+	//m_rowPointers = new png_bytep[(sizeof(png_bytep) * m_pngHeight)];
+	
+	for (int y=0; y<m_pngHeight; y++)
+	{
+		png_uint_32 size = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
+		m_rowPointers[y] = (png_byte*) malloc(size);
+	}
+
+	png_read_image(m_pngStructPtr, m_rowPointers);
+
+	fclose(fp);
+	return RES_SUCCESS;
+}
 RESERROE RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
@@ -11,6 +74,9 @@ RESERROE RImage::Draw()
 }
 RESERROE RTexture::LoadResource(LPCWSTR wszResPath)
 {
+	//detect the dividing line(RGB: 255,0,255)
+	//++++++++++++++++++++++++++++++++++++++++++
+
 	return RES_SUCCESS;
 }
 RESERROE RTexture::Draw()
