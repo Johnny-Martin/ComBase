@@ -77,7 +77,7 @@ RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	fclose(fp);
 	return RES_SUCCESS;
 }
-RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height)
+RESERROR RPicture::WritePngFileEx(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
 	char* file_name = new char[multiByteLen + 1];
@@ -113,6 +113,7 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, uns
 		m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
+	//write png file info to file
 	png_write_info(png_ptr, info_ptr);
 
 
@@ -131,6 +132,10 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, uns
 
 	fclose(fp);
 	return RES_SUCCESS;
+}
+RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
+{
+	return WritePngFileEx(wszFilePath, m_rowPointers, m_pngWidth, m_pngHeight);
 }
 RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
@@ -167,7 +172,7 @@ RTexture::RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, u
 					bitDepth, colorType, PNG_INTERLACE_NONE,
 						PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-	png_write_info(m_pngStructPtr, m_pngInfoPtr);
+	//png_write_info(m_pngStructPtr, m_pngInfoPtr);
 	
 	m_pngWidth  = width;
 	m_pngHeight = height;
@@ -268,8 +273,9 @@ RESERROR RPicList::CreatePicFromMem()
 		string textureId = m_szResID + '.';
 		textureId += szIndex;
 		RTexture* pTexture = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight);
-		m_picIndex2HandleMap.insert(pair<unsigned int, RPicture*>(verticalLineIndex+1, pTexture));
+		m_picListVector.push_back(pTexture);
 		
+		//put out to file for checking data
 		//wstring outPath = L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\";
 		//outPath.append(sizeof(char), verticalLineIndex + '0');
 		//outPath += L".png";
@@ -388,6 +394,15 @@ RESERROR ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 			return RES_ERROR_ILLEGAL_ID;
 
 		string strRealResId = GetRealIdFromPicListId(szResID);
+		iter = m_resID2HandleMap.find(strRealResId);
+		//piclist has been created
+		if (m_resID2HandleMap.end() != iter)
+		{
+			RPicList* picListObjPointer = dynamic_cast<RPicList*>(iter->second);
+			*hRes = picListObjPointer->GetPicByIndex(resIndex - 1);
+			return (NULL == (*hRes)) ? RES_ERROR_ILLEGAL_ID : RES_SUCCESS;
+		}
+
 		resFilePath = GetPicPathByID(strRealResId.c_str());
 		if (!::PathFileExists(resFilePath.c_str()))
 			return RES_ERROR_FILE_NOT_FOUND;
@@ -398,8 +413,8 @@ RESERROR ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 		//++++++++++++++++++++++++++++++++
 		m_resID2HandleMap.insert(pair<string, RPicList*>(szResID, picListObj));
 
-		*hRes = picListObj;
-		return RES_SUCCESS;
+		*hRes = picListObj->GetPicByIndex(resIndex - 1);
+		return (NULL == (*hRes)) ? RES_ERROR_ILLEGAL_ID : RES_SUCCESS;
 	}
 
 	iBeginPos = strResID.find("texture");

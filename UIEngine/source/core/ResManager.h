@@ -39,18 +39,20 @@ public:
 			free(m_rowPointers[rowIndex]);
 		
 		free(m_rowPointers);
-		cout<<"free m_rowPointers done"<<endl;
+		cout<<"ID: "<<m_szResID<<" free m_rowPointers done"<<endl;
 	}
 	void SetResID(string resID)
 	{
 		m_szResID = resID;
 	}
 	RESERROR GetLastResError(){ return m_resError;}
+	RESERROR WritePngFile(LPCWSTR wszFilePath);
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;
 	RESERROR ReadPngFile(LPCWSTR wszFilePath);
-	RESERROR WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
+	
+	RESERROR WritePngFileEx(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
 	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
 	
 	png_uint_32 m_pngWidth;
@@ -153,7 +155,17 @@ public:
 
 		m_resError = CreatePicFromMem();
 	}
-	
+	~RPicList()
+	{
+		for (int i=0; i<m_picListVector.size(); ++i)
+			delete m_picListVector[i];
+	}
+	RPicture* GetPicByIndex(unsigned int index)
+	{
+		if (m_picListVector.size() <= index)
+			return NULL;
+		return m_picListVector[index];
+	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
@@ -163,7 +175,7 @@ private:
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrDivideLinePosH;
 	const COLORREF m_purpleLineColor;
-	map<unsigned int, RPicture*> m_picIndex2HandleMap;
+	vector<RPicture*> m_picListVector;
 	
 };
 
@@ -173,6 +185,14 @@ public:
 	ResManager(){};
 	ResManager(LPWSTR szResPath){
 		SetResPath(szResPath);
+	}
+	~ResManager()
+	{
+		map<string, RPicture*>::iterator iter = m_resID2HandleMap.begin();
+		for (;iter != m_resID2HandleMap.end(); ++iter)
+		{
+			delete iter->second;
+		}
 	}
 	RESERROR SetResPath(LPWSTR wszResPath){
 		m_wszResPath = wszResPath;
