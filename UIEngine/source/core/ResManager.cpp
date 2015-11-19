@@ -137,6 +137,37 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 {
 	return WritePngFileEx(wszFilePath, m_rowPointers, m_pngWidth, m_pngHeight);
 }
+RESERROR RPicture::CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
+{
+	SetResID(szResID);
+	m_pngStructPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!m_pngStructPtr)
+	{
+		//m_resError = RES_ERROR_PARSE_FILE_FALIED;
+		return RES_ERROR_PARSE_FILE_FALIED;
+	}
+
+	m_pngInfoPtr = png_create_info_struct(m_pngStructPtr);
+	if (!m_pngInfoPtr)
+	{
+		//m_resError = RES_ERROR_PARSE_FILE_FALIED;
+		return RES_ERROR_PARSE_FILE_FALIED;
+	}
+
+	png_set_IHDR(m_pngStructPtr, m_pngInfoPtr, width, height,
+		bitDepth, colorType, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	//png_write_info(m_pngStructPtr, m_pngInfoPtr);
+
+	m_pngWidth  = width;
+	m_pngHeight = height;
+	m_bitDepth  = bitDepth;
+	m_colorType = colorType;
+	m_rowPointers = rowPointers;
+
+	return RES_SUCCESS;
+}
 RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
@@ -145,6 +176,11 @@ RESERROR RImage::Draw()
 {
 	return RES_SUCCESS;
 }
+RImage::RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
+{
+	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+}
+
 RESERROR RTexture::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
@@ -153,32 +189,7 @@ RESERROR RTexture::LoadResource(LPCWSTR wszResPath)
 //create a texture object with a two-dimensional array, and assign the png width and height
 RTexture::RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
 {
-	SetResID(szResID);
-	m_pngStructPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!m_pngStructPtr)
-	{
-		m_resError = RES_ERROR_PARSE_FILE_FALIED;
-		return;
-	}
-	
-	m_pngInfoPtr = png_create_info_struct(m_pngStructPtr);
-	if (!m_pngInfoPtr)
-	{
-		m_resError = RES_ERROR_PARSE_FILE_FALIED;
-		return;
-	}
-
-	png_set_IHDR(m_pngStructPtr, m_pngInfoPtr, width, height,
-					bitDepth, colorType, PNG_INTERLACE_NONE,
-						PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-	//png_write_info(m_pngStructPtr, m_pngInfoPtr);
-	
-	m_pngWidth  = width;
-	m_pngHeight = height;
-	m_bitDepth  = bitDepth;
-	m_colorType = colorType;
-	m_rowPointers = rowPointers;
+	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 }
 //detect the dividing line(RGB: 255,0,255)
 RESERROR RTexture::DetectPurpleLine()
@@ -272,8 +283,13 @@ RESERROR RPicList::CreatePicFromMem()
 		_itoa(verticalLineIndex+1, szIndex, 10);
 		string textureId = m_szResID + '.';
 		textureId += szIndex;
-		RTexture* pTexture = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight);
-		m_picListVector.push_back(pTexture);
+		RPicture* pPicObj = NULL;
+		if (TEXTURELIST == m_picListType)
+			pPicObj = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight);
+		else
+			pPicObj = new RImage(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight);
+		
+		m_picListVector.push_back(pPicObj);
 		
 		//put out to file for checking data
 		//wstring outPath = L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\";

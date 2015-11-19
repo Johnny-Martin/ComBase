@@ -14,6 +14,11 @@ enum RESERROR{
 	RES_ERROR_UNKNOWN,
 	RES_ERROR_COUNT
 };
+
+enum PICLIST_TYPE{
+	TEXTURELIST = 0,
+	IMAGELIST,
+};
 //'R' is short for "Render"
 
 class RPicture
@@ -47,6 +52,7 @@ public:
 	}
 	RESERROR GetLastResError(){ return m_resError;}
 	RESERROR WritePngFile(LPCWSTR wszFilePath);
+	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;
@@ -78,6 +84,7 @@ public:
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 	}
+	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
 protected:
@@ -145,6 +152,7 @@ public:
 	{
 		//LoadResource(wszResPath);
 		SetResID(resID);
+		SetPicListType(resID);
 		m_resError = ReadPngFile(wszResPath);
 		if (RES_SUCCESS != m_resError)
 			return;
@@ -157,7 +165,7 @@ public:
 	}
 	~RPicList()
 	{
-		for (int i=0; i<m_picListVector.size(); ++i)
+		for (unsigned int i=0; i<m_picListVector.size(); ++i)
 			delete m_picListVector[i];
 	}
 	RPicture* GetPicByIndex(unsigned int index)
@@ -165,6 +173,16 @@ public:
 		if (m_picListVector.size() <= index)
 			return NULL;
 		return m_picListVector[index];
+	}
+	void SetPicListType(LPCSTR resID)
+	{
+		string strResID = resID;
+		if (0 == strResID.find("texturelist"))
+			m_picListType = TEXTURELIST;
+		else if (0 == strResID.find("imagelist"))
+			m_picListType = IMAGELIST;
+		else
+			abort();
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
@@ -176,6 +194,7 @@ private:
 	vector<unsigned int> m_arrDivideLinePosH;
 	const COLORREF m_purpleLineColor;
 	vector<RPicture*> m_picListVector;
+	PICLIST_TYPE m_picListType;
 	
 };
 
