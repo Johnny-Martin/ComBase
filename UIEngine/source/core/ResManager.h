@@ -5,7 +5,7 @@ using namespace std;
 
 #ifndef RESOURCRMANAGER_H
 #define RESOURCRMANAGER_H
-enum RESERROE{
+enum RESERROR{
 	RES_SUCCESS = 0,
 	RES_ERROR_ILLEGAL_ID,
 	RES_ERROR_FILE_NOT_FOUND,
@@ -29,6 +29,7 @@ public:
 			  ,m_rowPointers(NULL)
 			  ,m_pngStructPtr(NULL)
 			  ,m_pngInfoPtr(NULL)
+			  ,m_resError(RES_SUCCESS)
 	{};
 	virtual ~RPicture()
 	{
@@ -40,13 +41,16 @@ public:
 		free(m_rowPointers);
 		cout<<"free m_rowPointers done"<<endl;
 	}
-	
-
+	void SetResID(string resID)
+	{
+		m_szResID = resID;
+	}
+	RESERROR GetLastResError(){ return m_resError;}
 protected:
-	virtual RESERROE LoadResource(LPCWSTR wszResPath) = 0;
-	virtual RESERROE Draw() = 0;
-	RESERROE ReadPngFile(LPCWSTR wszFilePath);
-	RESERROE WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
+	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
+	virtual RESERROR Draw() = 0;
+	RESERROR ReadPngFile(LPCWSTR wszFilePath);
+	RESERROR WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
 	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
 	
 	png_uint_32 m_pngWidth;
@@ -57,10 +61,11 @@ protected:
 	png_structp m_pngStructPtr;
 	png_infop   m_pngInfoPtr;
 
-private:
 	HBITMAP m_hResHandle;//??????
 	string m_szResID;
 	string m_szResTypeInfo;
+	RESERROR m_resError;
+
 };
 
 class RImage: public RPicture
@@ -71,8 +76,8 @@ public:
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 	}
-	RESERROE LoadResource(LPCWSTR wszResPath);
-	RESERROE Draw();
+	RESERROR LoadResource(LPCWSTR wszResPath);
+	RESERROR Draw();
 protected:
 private:
 	
@@ -98,10 +103,11 @@ public:
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 	};
-	RESERROE LoadResource(LPCWSTR wszResPath);
-	RESERROE Draw();
+	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
+	RESERROR LoadResource(LPCWSTR wszResPath);
+	RESERROR Draw();
 protected:
-	RESERROE DetectPurpleLine();
+	RESERROR DetectPurpleLine();
 private:
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrDivideLinePosH;
@@ -133,18 +139,26 @@ class RPicList: public RPicture
 public:
 	RPicList():m_purpleLineColor(RGBA(127,0,127,255)){};
 
-	RPicList(LPCWSTR wszResPath):m_purpleLineColor(RGBA(127,0,127,255))
+	RPicList(LPCWSTR wszResPath, LPCSTR resID):m_purpleLineColor(RGBA(127,0,127,255))
 	{
 		//LoadResource(wszResPath);
-		ReadPngFile(wszResPath);
-		DetectPurpleLine();
-		CreatePicFromMem();
+		SetResID(resID);
+		m_resError = ReadPngFile(wszResPath);
+		if (RES_SUCCESS != m_resError)
+			return;
+
+		m_resError = DetectPurpleLine();
+		if (RES_SUCCESS != m_resError)
+			return;
+
+		m_resError = CreatePicFromMem();
 	}
-	RESERROE LoadResource(LPCWSTR wszResPath);
-	RESERROE Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
+	
+	RESERROR LoadResource(LPCWSTR wszResPath);
+	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
-	RESERROE DetectPurpleLine();
-	RESERROE CreatePicFromMem();
+	RESERROR DetectPurpleLine();
+	RESERROR CreatePicFromMem();
 private:
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrDivideLinePosH;
@@ -160,7 +174,7 @@ public:
 	ResManager(LPWSTR szResPath){
 		SetResPath(szResPath);
 	}
-	RESERROE SetResPath(LPWSTR wszResPath){
+	RESERROR SetResPath(LPWSTR wszResPath){
 		m_wszResPath = wszResPath;
 		if (::PathFileExists(wszResPath))
 			return RES_SUCCESS;
@@ -168,7 +182,7 @@ public:
 		return RES_ERROR_FILE_NOT_FOUND;
 	}
 	static bool CheckPngFileHead(LPWSTR wszFilePath);
-	RESERROE GetResPicHandle(LPCSTR szResID, RPicture** hRes);
+	RESERROR GetResPicHandle(LPCSTR szResID, RPicture** hRes);
 protected:
 private:
 	unsigned int GetIndexFromPicListId(LPCSTR szPicListID);

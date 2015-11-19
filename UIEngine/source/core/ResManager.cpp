@@ -15,7 +15,7 @@ bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineCol
 	}
 	return true;
 }
-RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
+RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
 	char* file_name = new char[multiByteLen + 1];
@@ -77,7 +77,7 @@ RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	fclose(fp);
 	return RES_SUCCESS;
 }
-RESERROE RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height)
+RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
 	char* file_name = new char[multiByteLen + 1];
@@ -132,31 +132,62 @@ RESERROE RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, uns
 	fclose(fp);
 	return RES_SUCCESS;
 }
-RESERROE RImage::LoadResource(LPCWSTR wszResPath)
+RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
 }
-RESERROE RImage::Draw()
+RESERROR RImage::Draw()
 {
 	return RES_SUCCESS;
 }
-RESERROE RTexture::LoadResource(LPCWSTR wszResPath)
+RESERROR RTexture::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
+}
+
+//create a texture object with a two-dimensional array, and assign the png width and height
+RTexture::RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
+{
+	SetResID(szResID);
+	m_pngStructPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!m_pngStructPtr)
+	{
+		m_resError = RES_ERROR_PARSE_FILE_FALIED;
+		return;
+	}
+	
+	m_pngInfoPtr = png_create_info_struct(m_pngStructPtr);
+	if (!m_pngInfoPtr)
+	{
+		m_resError = RES_ERROR_PARSE_FILE_FALIED;
+		return;
+	}
+
+	png_set_IHDR(m_pngStructPtr, m_pngInfoPtr, width, height,
+					bitDepth, colorType, PNG_INTERLACE_NONE,
+						PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	png_write_info(m_pngStructPtr, m_pngInfoPtr);
+	
+	m_pngWidth  = width;
+	m_pngHeight = height;
+	m_bitDepth  = bitDepth;
+	m_colorType = colorType;
+	m_rowPointers = rowPointers;
 }
 //detect the dividing line(RGB: 255,0,255)
-RESERROE RTexture::DetectPurpleLine()
+RESERROR RTexture::DetectPurpleLine()
 {
 	//before calling this function,make sure that
 	//png file must has been loaded to memory successfully.
 
 	return RES_SUCCESS;
 }
-RESERROE RTexture::Draw()
+RESERROR RTexture::Draw()
 {
 	return RES_SUCCESS;
 }
-RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
+RESERROR RPicList::LoadResource(LPCWSTR wszResPath)
 {
 	//++++++++++++++++++++++++++++++++++++++++++
 	wstring wszFileName;
@@ -172,7 +203,7 @@ RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
 
 //detect the dividing line(RGB: 127,0,127)
 //a pictrue list's dividing line must be vertical
-RESERROE RPicList::DetectPurpleLine()
+RESERROR RPicList::DetectPurpleLine()
 {
 	//before calling this function,make sure that
 	//png file *must* has been loaded to memory successfully.
@@ -193,7 +224,7 @@ RESERROE RPicList::DetectPurpleLine()
 	}
 	return RES_SUCCESS;
 }
-RESERROE RPicList::CreatePicFromMem()
+RESERROR RPicList::CreatePicFromMem()
 {
 	if (m_arrDivideLinePosH.size() <= 0)
 		return RES_ERROR_UNKNOWN;
@@ -210,7 +241,6 @@ RESERROE RPicList::CreatePicFromMem()
 	{
 		unsigned int curDivideLinePos = m_arrDivideLinePosH[verticalLineIndex];
 		unsigned int newWidth = curDivideLinePos - lastDivideLinePos - 1;
-
 		pngDataPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
 		
 		for (unsigned int rowIndex=0; rowIndex < m_pngHeight; ++rowIndex)
@@ -233,18 +263,25 @@ RESERROE RPicList::CreatePicFromMem()
 		}
 		lastDivideLinePos = curDivideLinePos;
 
-		wstring outPath = L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\";
-		outPath.append(sizeof(char), verticalLineIndex + '0');
-		outPath += L".png";
-		WritePngFile(outPath.c_str(), pngDataPtr, newWidth, m_pngHeight);
+		char szIndex[10]={0};
+		_itoa(verticalLineIndex+1, szIndex, 10);
+		string textureId = m_szResID + '.';
+		textureId += szIndex;
+		RTexture* pTexture = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight);
+		m_picIndex2HandleMap.insert(pair<unsigned int, RPicture*>(verticalLineIndex+1, pTexture));
+		
+		//wstring outPath = L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\";
+		//outPath.append(sizeof(char), verticalLineIndex + '0');
+		//outPath += L".png";
+		//WritePngFile(outPath.c_str(), pngDataPtr, newWidth, m_pngHeight);
 
-		/* cleanup heap allocation */
-		for (unsigned int y=0; y<m_pngHeight; y++)
-		{
-			png_byte* tmpPtr = pngDataPtr[y];
-			free(tmpPtr);
-		}
-		free(pngDataPtr);
+		///* cleanup heap allocation */
+		//for (unsigned int y=0; y<m_pngHeight; y++)
+		//{
+		//	png_byte* tmpPtr = pngDataPtr[y];
+		//	free(tmpPtr);
+		//}
+		//free(pngDataPtr);
 
 	}
 
@@ -330,7 +367,7 @@ string ResManager::GetRealIdFromPicListId(LPCSTR szPicListID)
 
 	return strRealResId;
 }
-RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
+RESERROR ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 {
 	map<string, RPicture*>::iterator iter = m_resID2HandleMap.find(szResID);
 	if (m_resID2HandleMap.end() != iter)
@@ -355,7 +392,7 @@ RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 		if (!::PathFileExists(resFilePath.c_str()))
 			return RES_ERROR_FILE_NOT_FOUND;
 
-		RPicList* picListObj = new RPicList(resFilePath.c_str());
+		RPicList* picListObj = new RPicList(resFilePath.c_str(), strRealResId.c_str());
 		
 		//insert each of texture into map
 		//++++++++++++++++++++++++++++++++
