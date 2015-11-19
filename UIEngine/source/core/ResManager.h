@@ -46,6 +46,7 @@ protected:
 	virtual RESERROE LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROE Draw() = 0;
 	RESERROE ReadPngFile(LPCWSTR wszFilePath);
+	RESERROE WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
 	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
 	
 	png_uint_32 m_pngWidth;

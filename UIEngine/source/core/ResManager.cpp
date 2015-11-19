@@ -77,6 +77,61 @@ RESERROE RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	fclose(fp);
 	return RES_SUCCESS;
 }
+RESERROE RPicture::WritePngFile(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height)
+{
+	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
+	char* file_name = new char[multiByteLen + 1];
+	WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, file_name, multiByteLen, NULL, NULL);
+
+	/* create file */
+	FILE *fp = fopen(file_name, "wb");
+	if (!fp)
+		return RES_ERROR_FILE_NOT_FOUND;
+
+
+	/* initialize stuff */
+	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!png_ptr)
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_init_io(png_ptr, fp);
+
+
+	/* write header */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_set_IHDR(png_ptr, info_ptr, width, height,
+		m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	png_write_info(png_ptr, info_ptr);
+
+
+	/* write bytes */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_write_image(png_ptr, rowPointers);
+
+
+	/* end write */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return RES_ERROR_PARSE_FILE_FALIED;
+
+	png_write_end(png_ptr, NULL);
+
+	fclose(fp);
+	return RES_SUCCESS;
+}
 RESERROE RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
@@ -120,7 +175,7 @@ RESERROE RPicList::LoadResource(LPCWSTR wszResPath)
 RESERROE RPicList::DetectPurpleLine()
 {
 	//before calling this function,make sure that
-	//png file must has been loaded to memory successfully.
+	//png file *must* has been loaded to memory successfully.
 	png_byte* pixelDataPtr = NULL;
 	unsigned int lastLineColumnIndex = 0;
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
@@ -134,6 +189,7 @@ RESERROE RPicList::DetectPurpleLine()
 				m_arrDivideLinePosH.push_back(columnIndex);
 			}
 		}
+
 	}
 	return RES_SUCCESS;
 }
@@ -142,27 +198,57 @@ RESERROE RPicList::CreatePicFromMem()
 	if (m_arrDivideLinePosH.size() <= 0)
 		return RES_ERROR_UNKNOWN;
 
-	unsigned int lastDivideLinePos = 0;
 	png_bytep* pngDataPtr = NULL;
 	vector<unsigned int>::iterator iter = m_arrDivideLinePosH.begin();
+	
+	//a virtual dividing line before 0 column
+	int lastDivideLinePos = -1;
+	//a virtual dividing line after last column
+	m_arrDivideLinePosH.push_back(m_pngWidth);
+	
 	for (unsigned int verticalLineIndex = 0; verticalLineIndex < m_arrDivideLinePosH.size(); ++verticalLineIndex)
 	{
 		unsigned int curDivideLinePos = m_arrDivideLinePosH[verticalLineIndex];
-		
+		unsigned int newWidth = curDivideLinePos - lastDivideLinePos - 1;
+
 		pngDataPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
+		
 		for (unsigned int rowIndex=0; rowIndex < m_pngHeight; ++rowIndex)
 		{
-			//lost last pic
-			pngDataPtr[verticalLineIndex] = (png_byte*) malloc((curDivideLinePos - lastDivideLinePos) * sizeof(png_byte));
+			pngDataPtr[rowIndex] = (png_byte*) malloc(newWidth*4);
 			
-			//copy png data
-			for (unsigned int columnIndex=lastDivideLinePos; columnIndex < curDivideLinePos; ++columnIndex)
+			//copy png pixel data row by row, it takes *four* bytes per pixel
+			for (unsigned int columnIndex=0; columnIndex < newWidth; ++columnIndex)
 			{
-				pngDataPtr[rowIndex][columnIndex] = m_rowPointers[rowIndex][lastDivideLinePos + columnIndex];
+				unsigned int srcPngPixelPos = lastDivideLinePos + columnIndex + 1;
+				png_byte* dstPtr = &(pngDataPtr[rowIndex][columnIndex*4]);
+				png_byte* srcPtr = &(m_rowPointers[rowIndex][srcPngPixelPos*4]);
+
+				dstPtr[0] = srcPtr[0];//R
+				dstPtr[1] = srcPtr[1];//G
+				dstPtr[2] = srcPtr[2];//B
+				dstPtr[3] = srcPtr[3];//A
 			}
 
 		}
+		lastDivideLinePos = curDivideLinePos;
+
+		wstring outPath = L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\";
+		outPath.append(sizeof(char), verticalLineIndex + '0');
+		outPath += L".png";
+		WritePngFile(outPath.c_str(), pngDataPtr, newWidth, m_pngHeight);
+
+		/* cleanup heap allocation */
+		for (unsigned int y=0; y<m_pngHeight; y++)
+		{
+			png_byte* tmpPtr = pngDataPtr[y];
+			free(tmpPtr);
+		}
+		free(pngDataPtr);
+
 	}
+
+	m_arrDivideLinePosH.pop_back();
 	return RES_SUCCESS;
 }
 wstring ResManager::GetPicPathByID(LPCSTR szResID)
