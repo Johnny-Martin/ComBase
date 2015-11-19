@@ -266,11 +266,18 @@ void process_file(void)
 
 void example_5()//test for libpng
 {
-	RPicList picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texturelist.png");
+	//set resource folder,every plugin has it's own unique ResManager object
+	ResManager resMgr(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
+	RPicture* picObj;
+	//the first pic's index in piclist is '1' rather than '0'
+	//is illegal to pass an piclist id without a index section at the end
+	resMgr.GetResPicHandle("texturelist.ThreeV.btnbkg.2", &picObj);
+	
+	//RPicList picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texturelist.png");
 	//picObj.ReadPngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\你好hover.png");
-	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover.png");
+	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texture.png");
 	//process_file();
-	//write_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\hover_copy.png");
+	//write_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texture_copy.png");
 	int i = 1;
 }
 
@@ -279,7 +286,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//example_1();
 	//example_2();
 	//example_3();
-	//ResManager::CheckPngFileHead(L"E:\\A iss\\凯子婚礼精选\\texturelist.nine.customRectBkg.png");
+	
 	//example_4();
 	example_5();
 
