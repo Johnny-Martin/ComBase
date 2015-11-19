@@ -288,6 +288,48 @@ bool ResManager::CheckPngFileHead(LPWSTR wszFilePath)
 	}
 	return true;
 }
+unsigned int ResManager::GetIndexFromPicListId(LPCSTR szPicListID)
+{
+	unsigned int picIndex = 0;
+	//get the index section
+	std::size_t iPicListIDLen = strlen(szPicListID);
+	
+	unsigned int iLastDotPos = iPicListIDLen;
+	for (; iLastDotPos>0; --iLastDotPos)
+	{
+		if ('.' == szPicListID[iLastDotPos])
+			break;
+	}
+
+	for (unsigned int i=iLastDotPos + 1; i<iPicListIDLen; ++i)
+	{
+		if (szPicListID[i] > '9' || szPicListID[i] < '0')
+		{
+			return 0;
+		}else
+		{
+			picIndex = picIndex*10 + szPicListID[i] - '0';
+		}
+	}
+
+	return picIndex;
+}
+string ResManager::GetRealIdFromPicListId(LPCSTR szPicListID)
+{
+	//get the index section
+	unsigned int iLastDotPos = strlen(szPicListID);
+	for (; iLastDotPos>0; --iLastDotPos)
+	{
+		if ('.' == szPicListID[iLastDotPos])
+			break;
+	}
+	
+	string strRealResId;
+	for (unsigned int i=0; i<iLastDotPos; ++i)
+		strRealResId.append(sizeof(char), szPicListID[i]);
+
+	return strRealResId;
+}
 RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 {
 	map<string, RPicture*>::iterator iter = m_resID2HandleMap.find(szResID);
@@ -304,36 +346,11 @@ RESERROE ResManager::GetResPicHandle(LPCSTR szResID, RPicture** hRes)
 	std::size_t iBeginPosEx = strResID.find("imagelist");
 	if (0 == iBeginPos || 0 == iBeginPosEx)
 	{
-		//get the index section
-		std::size_t iResIDLen = strlen(szResID);
-		unsigned int iLastDotPos = iResIDLen;
-		for (; iLastDotPos>0; --iLastDotPos)
-		{
-			if ('.' == szResID[iLastDotPos])
-				break;
-		}
-		
-		bool bLastSectionCheck = true;
-		int picIndex = 0;
-		for (unsigned int i=iLastDotPos + 1; i<iResIDLen; ++i)
-		{
-			if (szResID[i] > '9' || szResID[i] < '0')
-			{
-				bLastSectionCheck = false;
-				break;
-			}else
-			{
-				picIndex = picIndex*10 + szResID[i] - '0';
-			}
-		}
-
-		if (!bLastSectionCheck)
+		unsigned int resIndex = GetIndexFromPicListId(szResID);
+		if (resIndex <= 0)
 			return RES_ERROR_ILLEGAL_ID;
 
-		string strRealResId;
-		for (unsigned int i=0; i<iLastDotPos; ++i)
-			strRealResId.append(sizeof(char), szResID[i]);
-
+		string strRealResId = GetRealIdFromPicListId(szResID);
 		resFilePath = GetPicPathByID(strRealResId.c_str());
 		if (!::PathFileExists(resFilePath.c_str()))
 			return RES_ERROR_FILE_NOT_FOUND;

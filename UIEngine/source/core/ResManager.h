@@ -171,6 +171,8 @@ public:
 	RESERROE GetResPicHandle(LPCSTR szResID, RPicture** hRes);
 protected:
 private:
+	unsigned int GetIndexFromPicListId(LPCSTR szPicListID);
+	string GetRealIdFromPicListId(LPCSTR szPicListID);
 	wstring GetPicPathByID(LPCSTR szResID);
 	wstring m_wszResPath;
 	map<string, RPicture*> m_resID2HandleMap;
