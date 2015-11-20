@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ParseXml.h"
+#include "XmlParser.h"
 using namespace std;
 
 unsigned int CObjectFactory::m_initialClassInfoArraySize = 0;

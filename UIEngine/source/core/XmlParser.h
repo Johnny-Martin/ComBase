@@ -2,8 +2,8 @@
 #include <list>
 #include <xstring>
 
-#ifndef PARSEXML_H
-#define PARSEXML_H
+#ifndef XMLPARSER_H
+#define XMLPARSER_H
 
 using namespace std;
 

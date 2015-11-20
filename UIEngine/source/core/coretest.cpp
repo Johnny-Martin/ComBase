@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <windows.h>
-#include "ParseXml.h"
+#include "XmlParser.h"
 #include <assert.h>
 
 #include "ResManager.h"
