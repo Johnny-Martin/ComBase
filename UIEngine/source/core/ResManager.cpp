@@ -324,7 +324,7 @@ RESERROR RPicList::CreatePicFromMem()
 				png_byte* dstPtr = &(pngDataPtr[rowIndex][columnIndex*bytesPerPixel]);
 				png_byte* srcPtr = &(m_rowPointers[rowIndex][srcPngPixelPos*bytesPerPixel]);
 
-				for (int i=0; i<bytesPerPixel; ++i)
+				for (unsigned int i=0; i<bytesPerPixel; ++i)
 					dstPtr[i] = srcPtr[i];
 			}
 
