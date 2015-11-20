@@ -19,6 +19,11 @@ enum PICLIST_TYPE{
 	TEXTURELIST = 0,
 	IMAGELIST,
 };
+enum TEXTURE_TYPE{
+	THREE_V = 0,
+	NINE,
+	THREE_H,
+};
 //'R' is short for "Render"
 
 class RPicture
@@ -31,6 +36,7 @@ public:
 			  ,m_pngHeight(0)
 			  ,m_colorType(0)
 			  ,m_bitDepth(0)
+			  ,m_pixelDepth(0)
 			  ,m_rowPointers(NULL)
 			  ,m_pngStructPtr(NULL)
 			  ,m_pngInfoPtr(NULL)
@@ -52,19 +58,20 @@ public:
 	}
 	RESERROR GetLastResError(){ return m_resError;}
 	RESERROR WritePngFile(LPCWSTR wszFilePath);
-	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
+	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6);
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;
 	RESERROR ReadPngFile(LPCWSTR wszFilePath);
 	
-	RESERROR WritePngFileEx(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
+	
 	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
 	bool IsHorizontalLine(unsigned int verticalPos, COLORREF lineColor);
 	png_uint_32 m_pngWidth;
 	png_uint_32 m_pngHeight;
 	png_byte    m_colorType;
 	png_byte    m_bitDepth;
+	png_byte    m_pixelDepth;
 	png_bytep * m_rowPointers; //In fact, m_rowPointers is a two-dimensional array
 	png_structp m_pngStructPtr;
 	png_infop   m_pngInfoPtr;
@@ -80,13 +87,15 @@ class RImage: public RPicture
 {
 public:
 	RImage(){};
-	RImage(LPCWSTR wszResPath){
+	RImage(LPCWSTR wszResPath, LPCSTR szResID){
 		//LoadResource(wszResPath);
+		SetResID(szResID);
 		ReadPngFile(wszResPath);
 	}
-	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6)
+	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6)
 	{
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+		SetResID(szResID);
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, pixelDepth, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
@@ -111,15 +120,19 @@ class RTexture: public RPicture
 {
 public:
 	RTexture():m_purpleLineColor(RGBA(255,0,255,255)){};
-	RTexture(LPCWSTR wszResPath):m_purpleLineColor(RGBA(255,0,255,255))
+	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGBA(255,0,255,255))
 	{
 		//LoadResource(wszResPath);
+		SetResID(szResID);
+		SetTextureType(szResID);
 		ReadPngFile(wszResPath);
 	};
 	//create a texture object with a two-dimensional array, and assign the png width and height
-	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6):m_purpleLineColor(RGBA(255,0,255,255))
+	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6):m_purpleLineColor(RGBA(255,0,255,255))
 	{
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+		SetResID(szResID);
+		SetTextureType(szResID);
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, pixelDepth, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
@@ -127,11 +140,24 @@ protected:
 	RESERROR DetectVerticalLine();
 	RESERROR DetectHorizontalLine();
 private:
+	void SetTextureType(LPCSTR resID)
+	{
+		string strResID = resID;
+		if (string::npos != strResID.find("ThreeV"))
+			m_textureType = THREE_V;
+		else if (string::npos != strResID.find("Nine"))
+			m_textureType = NINE;
+		else if (string::npos != strResID.find("ThreeH"))
+			m_textureType = THREE_H;
+		else
+			abort();
+	}
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrVerticalLinePos;
 	//horizontal dividing line's position in vertical direction
 	vector<unsigned int> m_arrHorizontalLinePos;
 	const COLORREF m_purpleLineColor;
+	TEXTURE_TYPE m_textureType;
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
@@ -184,6 +210,13 @@ public:
 			return NULL;
 		return m_picListVector[index];
 	}
+	
+	RESERROR LoadResource(LPCWSTR wszResPath);
+	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
+protected:
+	RESERROR DetectVerticalLine();
+	RESERROR CreatePicFromMem();
+private:
 	void SetPicListType(LPCSTR resID)
 	{
 		string strResID = resID;
@@ -194,12 +227,6 @@ public:
 		else
 			abort();
 	}
-	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
-protected:
-	RESERROR DetectVerticalLine();
-	RESERROR CreatePicFromMem();
-private:
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrVerticalLinePos;
 	const COLORREF m_purpleLineColor;
