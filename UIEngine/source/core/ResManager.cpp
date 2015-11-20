@@ -67,6 +67,10 @@ RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	png_set_sig_bytes(m_pngStructPtr, 8);
 
 	png_read_info(m_pngStructPtr, m_pngInfoPtr);
+	
+	if (png_get_color_type(m_pngStructPtr, m_pngInfoPtr) != PNG_COLOR_TYPE_RGB
+		&& png_get_color_type(m_pngStructPtr, m_pngInfoPtr) != PNG_COLOR_TYPE_RGBA)
+		return RES_ERROR_ILLEGAL_PNG_FILE;
 
 	m_pngWidth   = png_get_image_width(m_pngStructPtr, m_pngInfoPtr);
 	m_pngHeight  = png_get_image_height(m_pngStructPtr, m_pngInfoPtr);
@@ -114,9 +118,9 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	if (!png_ptr)
 		return RES_ERROR_PARSE_FILE_FALIED;
 
-	png_infop info_ptr = m_pngInfoPtr;//png_create_info_struct(png_ptr);
-	//if (!info_ptr)
-	//	return RES_ERROR_PARSE_FILE_FALIED;
+	png_infop info_ptr = png_create_info_struct(png_ptr);//m_pngInfoPtr;
+	if (!info_ptr)
+		return RES_ERROR_PARSE_FILE_FALIED;
 
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return RES_ERROR_PARSE_FILE_FALIED;
@@ -128,11 +132,10 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return RES_ERROR_PARSE_FILE_FALIED;
 
-	//png_set_IHDR(png_ptr, info_ptr, m_pngWidth, m_pngHeight,
-	//	m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
-	//	PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	png_set_IHDR(png_ptr, info_ptr, m_pngWidth, m_pngHeight,
+		m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-	//info_ptr->pixel_depth = m_pixelDepth;
 	//write png file info to file
 	png_write_info(png_ptr, info_ptr);
 
@@ -151,6 +154,8 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	png_write_end(png_ptr, NULL);
 
 	fclose(fp);
+
+	png_destroy_write_struct(&png_ptr, &info_ptr);
 	return RES_SUCCESS;
 }
 

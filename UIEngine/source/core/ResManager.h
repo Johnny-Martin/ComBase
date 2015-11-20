@@ -11,6 +11,7 @@ enum RESERROR{
 	RES_ERROR_FILE_NOT_FOUND,
 	RES_ERROR_ILLEGAL_FILE_TYPE,
 	RES_ERROR_PARSE_FILE_FALIED,
+	RES_ERROR_ILLEGAL_PNG_FILE,
 	RES_ERROR_UNKNOWN,
 	RES_ERROR_COUNT
 };
@@ -46,10 +47,17 @@ public:
 	{
 		//m_rowPointers is allocated by malloc() in function png_create_read_struct(),
 		//thus release with free()
-		for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
-			free(m_rowPointers[rowIndex]);
+		if (m_rowPointers)
+		{
+			for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+				free(m_rowPointers[rowIndex]);
+
+			free(m_rowPointers);
+		}
 		
-		free(m_rowPointers);
+		if (m_pngStructPtr && m_pngInfoPtr)
+			png_destroy_read_struct(&m_pngStructPtr, &m_pngInfoPtr, NULL);
+			
 		cout<<"ID: "<<m_szResID<<" free m_rowPointers done"<<endl;
 	}
 	void SetResID(string resID)
