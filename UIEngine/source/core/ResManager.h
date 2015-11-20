@@ -60,7 +60,7 @@ protected:
 	
 	RESERROR WritePngFileEx(LPCWSTR wszFilePath, png_bytep *rowPointers, unsigned int width, unsigned int height);
 	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
-	
+	bool IsHorizontalLine(unsigned int verticalPos, COLORREF lineColor);
 	png_uint_32 m_pngWidth;
 	png_uint_32 m_pngHeight;
 	png_byte    m_colorType;
@@ -84,7 +84,10 @@ public:
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 	}
-	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
+	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6)
+	{
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
 protected:
@@ -107,21 +110,28 @@ private:
 class RTexture: public RPicture
 {
 public:
-	RTexture();
-	RTexture(LPCWSTR wszResPath){
+	RTexture():m_purpleLineColor(RGBA(255,0,255,255)){};
+	RTexture(LPCWSTR wszResPath):m_purpleLineColor(RGBA(255,0,255,255))
+	{
 		//LoadResource(wszResPath);
 		ReadPngFile(wszResPath);
 	};
-	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6);
+	//create a texture object with a two-dimensional array, and assign the png width and height
+	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth = 8, png_byte colorType = 6):m_purpleLineColor(RGBA(255,0,255,255))
+	{
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
 protected:
-	RESERROR DetectPurpleLine();
+	RESERROR DetectVerticalLine();
+	RESERROR DetectHorizontalLine();
 private:
 	//vertical dividing line's position in horizontal direction
-	vector<unsigned int> m_arrDivideLinePosH;
+	vector<unsigned int> m_arrVerticalLinePos;
 	//horizontal dividing line's position in vertical direction
-	vector<unsigned int> m_arrDivideLinePosV;
+	vector<unsigned int> m_arrHorizontalLinePos;
+	const COLORREF m_purpleLineColor;
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
@@ -157,7 +167,7 @@ public:
 		if (RES_SUCCESS != m_resError)
 			return;
 
-		m_resError = DetectPurpleLine();
+		m_resError = DetectVerticalLine();
 		if (RES_SUCCESS != m_resError)
 			return;
 
@@ -187,11 +197,11 @@ public:
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
-	RESERROR DetectPurpleLine();
+	RESERROR DetectVerticalLine();
 	RESERROR CreatePicFromMem();
 private:
 	//vertical dividing line's position in horizontal direction
-	vector<unsigned int> m_arrDivideLinePosH;
+	vector<unsigned int> m_arrVerticalLinePos;
 	const COLORREF m_purpleLineColor;
 	vector<RPicture*> m_picListVector;
 	PICLIST_TYPE m_picListType;

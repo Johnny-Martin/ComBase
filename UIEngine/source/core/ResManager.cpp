@@ -15,6 +15,19 @@ bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineCol
 	}
 	return true;
 }
+bool RPicture::IsHorizontalLine(unsigned int horizontalPos, const COLORREF lineColor)
+{
+	png_byte* row = m_rowPointers[horizontalPos];
+	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
+	{
+		png_byte* ptr = &(row[columnIndex*4]);
+
+		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], ptr[3]);
+		if (lineColor != pixelColor)
+			return false;
+	}
+	return true;
+}
 RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
@@ -176,27 +189,54 @@ RESERROR RImage::Draw()
 {
 	return RES_SUCCESS;
 }
-RImage::RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
-{
-	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
-}
 
 RESERROR RTexture::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
 }
 
-//create a texture object with a two-dimensional array, and assign the png width and height
-RTexture::RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
-{
-	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
-}
+
 //detect the dividing line(RGB: 255,0,255)
-RESERROR RTexture::DetectPurpleLine()
+RESERROR RTexture::DetectVerticalLine()
 {
 	//before calling this function,make sure that
 	//png file must has been loaded to memory successfully.
+	png_byte* pixelDataPtr = NULL;
+	unsigned int lastLineColumnIndex = 0;
+	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
+	{
+		pixelDataPtr = &(m_rowPointers[0][columnIndex*4]);
+		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], pixelDataPtr[3]);
+		if (m_purpleLineColor == pixelColor)
+		{
+			if (IsVerticalLine(columnIndex, m_purpleLineColor))
+			{
+				m_arrVerticalLinePos.push_back(columnIndex);
+			}
+		}
 
+	}
+	return RES_SUCCESS;
+}
+RESERROR RTexture::DetectHorizontalLine()
+{
+	//before calling this function,make sure that
+	//png file must has been loaded to memory successfully.
+	png_byte* pixelDataPtr = NULL;
+	unsigned int lastLineRowIndex = 0;
+	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+	{
+		pixelDataPtr = &(m_rowPointers[rowIndex*4][0]);
+		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], pixelDataPtr[3]);
+		if (m_purpleLineColor == pixelColor)
+		{
+			if (IsHorizontalLine(rowIndex, m_purpleLineColor))
+			{
+				m_arrHorizontalLinePos.push_back(rowIndex);
+			}
+		}
+
+	}
 	return RES_SUCCESS;
 }
 RESERROR RTexture::Draw()
@@ -219,7 +259,7 @@ RESERROR RPicList::LoadResource(LPCWSTR wszResPath)
 
 //detect the dividing line(RGB: 127,0,127)
 //a pictrue list's dividing line must be vertical
-RESERROR RPicList::DetectPurpleLine()
+RESERROR RPicList::DetectVerticalLine()
 {
 	//before calling this function,make sure that
 	//png file *must* has been loaded to memory successfully.
@@ -233,7 +273,7 @@ RESERROR RPicList::DetectPurpleLine()
 		{
 			if (IsVerticalLine(columnIndex, m_purpleLineColor))
 			{
-				m_arrDivideLinePosH.push_back(columnIndex);
+				m_arrVerticalLinePos.push_back(columnIndex);
 			}
 		}
 
@@ -242,20 +282,20 @@ RESERROR RPicList::DetectPurpleLine()
 }
 RESERROR RPicList::CreatePicFromMem()
 {
-	if (m_arrDivideLinePosH.size() <= 0)
+	if (m_arrVerticalLinePos.size() <= 0)
 		return RES_ERROR_UNKNOWN;
 
 	png_bytep* pngDataPtr = NULL;
-	vector<unsigned int>::iterator iter = m_arrDivideLinePosH.begin();
+	vector<unsigned int>::iterator iter = m_arrVerticalLinePos.begin();
 	
 	//a virtual dividing line before 0 column
 	int lastDivideLinePos = -1;
 	//a virtual dividing line after last column
-	m_arrDivideLinePosH.push_back(m_pngWidth);
+	m_arrVerticalLinePos.push_back(m_pngWidth);
 	
-	for (unsigned int verticalLineIndex = 0; verticalLineIndex < m_arrDivideLinePosH.size(); ++verticalLineIndex)
+	for (unsigned int verticalLineIndex = 0; verticalLineIndex < m_arrVerticalLinePos.size(); ++verticalLineIndex)
 	{
-		unsigned int curDivideLinePos = m_arrDivideLinePosH[verticalLineIndex];
+		unsigned int curDivideLinePos = m_arrVerticalLinePos[verticalLineIndex];
 		unsigned int newWidth = curDivideLinePos - lastDivideLinePos - 1;
 		pngDataPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
 		
@@ -307,7 +347,7 @@ RESERROR RPicList::CreatePicFromMem()
 
 	}
 
-	m_arrDivideLinePosH.pop_back();
+	m_arrVerticalLinePos.pop_back();
 	return RES_SUCCESS;
 }
 wstring ResManager::GetPicPathByID(LPCSTR szResID)
