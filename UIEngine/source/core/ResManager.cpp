@@ -10,11 +10,8 @@ bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineCol
 		png_byte* row = m_rowPointers[rowIndex];
 		png_byte* ptr = &(row[horizontalPos*bytesPerPixel]);
 		
-		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
-		DWORD result = pixelColor ^ lineColor;
-		result = result | 0xff000000;
-		if (result != 0xff000000)
-		//if (lineColor != pixelColor)
+		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], 255);
+		if (lineColor != pixelColor)
 			return false;
 	}
 	return true;
@@ -27,7 +24,7 @@ bool RPicture::IsHorizontalLine(unsigned int horizontalPos, const COLORREF lineC
 	{
 		png_byte* ptr = &(row[columnIndex*bytesPerPixel]);
 
-		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
+		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], 255);
 		if (lineColor != pixelColor)
 			return false;
 	}
@@ -218,11 +215,8 @@ RESERROR RTexture::DetectVerticalLine()
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
 		pixelDataPtr = &(m_rowPointers[0][columnIndex*bytesPerPixel]);
-		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
-		DWORD result = pixelColor ^ m_purpleLineColor;
-		result = result | 0xff000000;
-		if (result == 0xff000000)
-		//if (m_purpleLineColor == pixelColor)
+		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], 255);
+		if (m_purpleLineColor == pixelColor)
 		{
 			if (IsVerticalLine(columnIndex, m_purpleLineColor))
 			{
@@ -241,8 +235,8 @@ RESERROR RTexture::DetectHorizontalLine()
 	unsigned int bytesPerPixel = m_pixelDepth/8;
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
-		pixelDataPtr = &(m_rowPointers[rowIndex*bytesPerPixel][0]);
-		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
+		pixelDataPtr = &(m_rowPointers[rowIndex][0]);
+		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], 255);
 		if (m_purpleLineColor == pixelColor)
 		{
 			if (IsHorizontalLine(rowIndex, m_purpleLineColor))

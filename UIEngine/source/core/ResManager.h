@@ -141,6 +141,21 @@ public:
 		SetResID(szResID);
 		SetTextureType(szResID);
 		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+		if (RES_SUCCESS == m_resError)
+		{
+			if (THREE_V == m_textureType)
+			{
+				DetectVerticalLine();
+			}else if (NINE == m_textureType)
+			{
+				DetectVerticalLine();
+				DetectHorizontalLine();
+			}else if (THREE_H == m_textureType)
+			{
+				DetectHorizontalLine();
+			}else
+				abort();
+		}
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
