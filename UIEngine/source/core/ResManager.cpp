@@ -33,6 +33,7 @@ bool RPicture::IsHorizontalLine(unsigned int horizontalPos, const COLORREF lineC
 	}
 	return true;
 }
+//Only support 24 and 32 bits pixel depth png file
 RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
