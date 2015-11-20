@@ -178,10 +178,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\core\ParseXml.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\core\Render.cpp"
 				>
 			</File>
@@ -193,16 +189,16 @@
 				RelativePath="..\..\source\core\stdafx.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\source\core\XmlParser.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\source\core\ParseXml.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\source\core\Render.h"
 				>
@@ -217,6 +213,10 @@
 			</File>
 			<File
 				RelativePath="..\..\source\core\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\core\XmlParser.h"
 				>
 			</File>
 		</Filter>
