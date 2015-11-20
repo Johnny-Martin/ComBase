@@ -8,7 +8,7 @@ bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineCol
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
 		png_byte* row = m_rowPointers[rowIndex];
-		png_byte* ptr = &(row[horizontalPos*4]);
+		png_byte* ptr = &(row[horizontalPos*bytesPerPixel]);
 		
 		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
 		DWORD result = pixelColor ^ lineColor;
@@ -25,7 +25,7 @@ bool RPicture::IsHorizontalLine(unsigned int horizontalPos, const COLORREF lineC
 	unsigned int bytesPerPixel = m_pixelDepth/8;
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
-		png_byte* ptr = &(row[columnIndex*4]);
+		png_byte* ptr = &(row[columnIndex*bytesPerPixel]);
 
 		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
 		if (lineColor != pixelColor)
@@ -114,9 +114,9 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	if (!png_ptr)
 		return RES_ERROR_PARSE_FILE_FALIED;
 
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-		return RES_ERROR_PARSE_FILE_FALIED;
+	png_infop info_ptr = m_pngInfoPtr;//png_create_info_struct(png_ptr);
+	//if (!info_ptr)
+	//	return RES_ERROR_PARSE_FILE_FALIED;
 
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return RES_ERROR_PARSE_FILE_FALIED;
@@ -128,10 +128,11 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return RES_ERROR_PARSE_FILE_FALIED;
 
-	png_set_IHDR(png_ptr, info_ptr, m_pngWidth, m_pngHeight,
-		m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	//png_set_IHDR(png_ptr, info_ptr, m_pngWidth, m_pngHeight,
+	//	m_bitDepth, m_colorType, PNG_INTERLACE_NONE,
+	//	PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
+	//info_ptr->pixel_depth = m_pixelDepth;
 	//write png file info to file
 	png_write_info(png_ptr, info_ptr);
 
@@ -153,7 +154,7 @@ RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 	return RES_SUCCESS;
 }
 
-RESERROR RPicture::CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth/* =32 */, png_byte bitDepth/* =8 */, png_byte colorType/* =6 */)
+RESERROR RPicture::CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType)
 {
 	m_pngStructPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!m_pngStructPtr)
@@ -180,8 +181,8 @@ RESERROR RPicture::CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsig
 	m_bitDepth    = bitDepth;
 	m_colorType   = colorType;
 	m_rowPointers = rowPointers;
-	m_pixelDepth  = pixelDepth;
-	m_pngInfoPtr->pixel_depth = m_pixelDepth;
+	m_pixelDepth  = m_pngInfoPtr->pixel_depth;
+	//m_pngInfoPtr->pixel_depth = m_pixelDepth;
 
 	return RES_SUCCESS;
 }
@@ -210,7 +211,7 @@ RESERROR RTexture::DetectVerticalLine()
 
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
-		pixelDataPtr = &(m_rowPointers[0][columnIndex*4]);
+		pixelDataPtr = &(m_rowPointers[0][columnIndex*bytesPerPixel]);
 		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
 		DWORD result = pixelColor ^ m_purpleLineColor;
 		result = result | 0xff000000;
@@ -234,7 +235,7 @@ RESERROR RTexture::DetectHorizontalLine()
 	unsigned int bytesPerPixel = m_pixelDepth/8;
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
-		pixelDataPtr = &(m_rowPointers[rowIndex*4][0]);
+		pixelDataPtr = &(m_rowPointers[rowIndex*bytesPerPixel][0]);
 		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
 		if (m_purpleLineColor == pixelColor)
 		{
@@ -276,7 +277,7 @@ RESERROR RPicList::DetectVerticalLine()
 
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
-		pixelDataPtr = &(m_rowPointers[0][columnIndex*4]);
+		pixelDataPtr = &(m_rowPointers[0][columnIndex*bytesPerPixel]);
 
 		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
 		
@@ -316,19 +317,17 @@ RESERROR RPicList::CreatePicFromMem()
 		unsigned int bytesPerPixel = m_pixelDepth/8;
 		for (unsigned int rowIndex=0; rowIndex < m_pngHeight; ++rowIndex)
 		{
-			pngDataPtr[rowIndex] = (png_byte*) malloc(newWidth*4);
+			pngDataPtr[rowIndex] = (png_byte*) malloc(newWidth*bytesPerPixel);
 			
 			//copy png pixel data row by row, it takes *four* bytes per pixel
 			for (unsigned int columnIndex=0; columnIndex < newWidth; ++columnIndex)
 			{
 				unsigned int srcPngPixelPos = lastDivideLinePos + columnIndex + 1;
-				png_byte* dstPtr = &(pngDataPtr[rowIndex][columnIndex*4]);
-				png_byte* srcPtr = &(m_rowPointers[rowIndex][srcPngPixelPos*4]);
+				png_byte* dstPtr = &(pngDataPtr[rowIndex][columnIndex*bytesPerPixel]);
+				png_byte* srcPtr = &(m_rowPointers[rowIndex][srcPngPixelPos*bytesPerPixel]);
 
-				dstPtr[0] = srcPtr[0];//R
-				dstPtr[1] = srcPtr[1];//G
-				dstPtr[2] = srcPtr[2];//B
-				dstPtr[3] = srcPtr[3];//A
+				for (int i=0; i<bytesPerPixel; ++i)
+					dstPtr[i] = srcPtr[i];
 			}
 
 		}
@@ -340,9 +339,9 @@ RESERROR RPicList::CreatePicFromMem()
 		textureId += szIndex;
 		RPicture* pPicObj = NULL;
 		if (TEXTURELIST == m_picListType)
-			pPicObj = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_pixelDepth);
+			pPicObj = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
 		else
-			pPicObj = new RImage(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_pixelDepth);
+			pPicObj = new RImage(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
 		
 		m_picListVector.push_back(pPicObj);
 	}

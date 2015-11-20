@@ -58,7 +58,7 @@ public:
 	}
 	RESERROR GetLastResError(){ return m_resError;}
 	RESERROR WritePngFile(LPCWSTR wszFilePath);
-	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6);
+	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType);
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;
@@ -92,10 +92,10 @@ public:
 		SetResID(szResID);
 		ReadPngFile(wszResPath);
 	}
-	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6)
+	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType)
 	{
 		SetResID(szResID);
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, pixelDepth, bitDepth, colorType);
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
@@ -128,11 +128,11 @@ public:
 		ReadPngFile(wszResPath);
 	};
 	//create a texture object with a two-dimensional array, and assign the png width and height
-	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte pixelDepth = 32, png_byte bitDepth = 8, png_byte colorType = 6):m_purpleLineColor(RGBA(255,0,255,255))
+	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType):m_purpleLineColor(RGBA(255,0,255,255))
 	{
 		SetResID(szResID);
 		SetTextureType(szResID);
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, pixelDepth, bitDepth, colorType);
+		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
 	RESERROR Draw();
