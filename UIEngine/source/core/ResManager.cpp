@@ -10,7 +10,7 @@ bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineCol
 		png_byte* row = m_rowPointers[rowIndex];
 		png_byte* ptr = &(row[horizontalPos*bytesPerPixel]);
 		
-		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], 255);
+		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
 		if (lineColor != pixelColor)
 			return false;
 	}
@@ -24,7 +24,7 @@ bool RPicture::IsHorizontalLine(unsigned int horizontalPos, const COLORREF lineC
 	{
 		png_byte* ptr = &(row[columnIndex*bytesPerPixel]);
 
-		COLORREF pixelColor = RGBA(ptr[0], ptr[1], ptr[2], 255);
+		COLORREF pixelColor = RGB(ptr[0], ptr[1], ptr[2]);
 		if (lineColor != pixelColor)
 			return false;
 	}
@@ -215,7 +215,7 @@ RESERROR RTexture::DetectVerticalLine()
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
 		pixelDataPtr = &(m_rowPointers[0][columnIndex*bytesPerPixel]);
-		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], 255);
+		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
 		if (m_purpleLineColor == pixelColor)
 		{
 			if (IsVerticalLine(columnIndex, m_purpleLineColor))
@@ -236,7 +236,7 @@ RESERROR RTexture::DetectHorizontalLine()
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
 		pixelDataPtr = &(m_rowPointers[rowIndex][0]);
-		COLORREF pixelColor = RGBA(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2], 255);
+		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
 		if (m_purpleLineColor == pixelColor)
 		{
 			if (IsHorizontalLine(rowIndex, m_purpleLineColor))
@@ -278,13 +278,8 @@ RESERROR RPicList::DetectVerticalLine()
 	for (unsigned int columnIndex=0; columnIndex<m_pngWidth; ++columnIndex)
 	{
 		pixelDataPtr = &(m_rowPointers[0][columnIndex*bytesPerPixel]);
-
 		COLORREF pixelColor = RGB(pixelDataPtr[0], pixelDataPtr[1], pixelDataPtr[2]);
-		
-		DWORD result = pixelColor ^ m_purpleLineColor;
-		result = result | 0xff000000;
-		if (result == 0xff000000)
-		//if (m_purpleLineColor == pixelColor)
+		if (m_purpleLineColor == pixelColor)
 		{
 			if (IsVerticalLine(columnIndex, m_purpleLineColor))
 			{

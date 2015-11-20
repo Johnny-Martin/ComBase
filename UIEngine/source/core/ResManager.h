@@ -127,8 +127,8 @@ private:
 class RTexture: public RPicture
 {
 public:
-	RTexture():m_purpleLineColor(RGBA(255,0,255,255)){};
-	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGBA(255,0,255,255))
+	RTexture():m_purpleLineColor(RGB(255,0,255)){};
+	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGB(255,0,255))
 	{
 		//LoadResource(wszResPath);
 		SetResID(szResID);
@@ -136,7 +136,7 @@ public:
 		ReadPngFile(wszResPath);
 	};
 	//create a texture object with a two-dimensional array, and assign the png width and height
-	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType):m_purpleLineColor(RGBA(255,0,255,255))
+	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType):m_purpleLineColor(RGB(255,0,255))
 	{
 		SetResID(szResID);
 		SetTextureType(szResID);
@@ -205,9 +205,9 @@ private:
 class RPicList: public RPicture
 {
 public:
-	RPicList():m_purpleLineColor(RGBA(127,0,127,255)){};
+	RPicList():m_purpleLineColor(RGB(127,0,127)){};
 
-	RPicList(LPCWSTR wszResPath, LPCSTR resID):m_purpleLineColor(RGBA(127,0,127,255))
+	RPicList(LPCWSTR wszResPath, LPCSTR resID):m_purpleLineColor(RGB(127,0,127))
 	{
 		//LoadResource(wszResPath);
 		SetResID(resID);
