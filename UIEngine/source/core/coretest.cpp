@@ -271,14 +271,14 @@ void example_5()//test for libpng
 	RPicture* picObj;
 	//the first pic's index in piclist is '1' rather than '0'
 	//is illegal to pass an piclist id without a index section at the end
-	resMgr.GetResPicHandle("imagelist.downArrow.3", &picObj);
+	RESERROR resErr = resMgr.GetResPicHandle("texturelist.Nine.btnbkg.4", &picObj);
 	
 	picObj->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\testout.png");
 
 	//delete picObj;
 	//RPicList picObj(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texturelist.png");
 	//picObj.ReadPngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\ÄãºÃhover.png");
-	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texture.png");
+	//read_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texturelist.Nine.btnbkg.png");
 	//process_file();
 	//write_png_file("E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texture_copy.png");
 	int i = 1;
