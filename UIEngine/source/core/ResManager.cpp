@@ -98,6 +98,9 @@ RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	fclose(fp);
 	return RES_SUCCESS;
 }
+//this function inspect the png data and png info that build function "CreatePicByData" 
+//if we can create a png file in disk with "m_rowPointers" and "m_pngInfoPtr"
+//the data must be definitely correct!
 RESERROR RPicture::WritePngFile(LPCWSTR wszFilePath)
 {
 	int multiByteLen = WideCharToMultiByte(CP_ACP, 0, wszFilePath, -1, NULL, 0, NULL, NULL);
