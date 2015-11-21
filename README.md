@@ -20,3 +20,5 @@ NInvole                          https://github.com/lxrite/NInvoke/trunk
 
 Win7 SDK                         https://www.microsoft.com/en-us/download/details.aspx?id=8442 
 (GRMSDK_EN_DVD.iso for X86; GRMSDKIAI_EN_DVD.iso for Itanium; GRMSDKX_EN_DVD.iso for X64)
+(if install failed, please uninstall all Visual C++ 2010 Runtimes from your machine (both x86 and x64),
+then run GRMSDK_EN_DVD.iso, When selecting which options to install UNCHECK the Visual C++ Compilers option)
