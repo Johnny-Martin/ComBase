@@ -18,4 +18,4 @@ ZLog                             https://github.com/lopsd07/WinZlog/trunk
 TinyBind                         http://nchc.dl.sourceforge.net/project/tinybind/tinybind/0.1/tinybind.tar.gz
 NInvole                          https://github.com/lxrite/NInvoke/trunk
 
-DirectX SDK                      http://www.microsoft.com/en-us/download/details.aspx?id=8279
+Win7 SDK                         http://www.microsoft.com/en-us/download/details.aspx?id=8279
