@@ -65,7 +65,7 @@
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\include\libpng"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -178,10 +178,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\core\UIRender.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\core\ResManager.cpp"
 				>
 			</File>
@@ -198,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\source\core\UIRender.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\source\core\XmlParser.cpp"
 				>
 			</File>
@@ -207,10 +207,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\source\core\UIRender.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\source\core\ResManager.h"
 				>
@@ -229,6 +225,10 @@
 			</File>
 			<File
 				RelativePath="..\..\source\core\UIObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\core\UIRender.h"
 				>
 			</File>
 			<File
