@@ -67,6 +67,10 @@ public:
 	RESERROR GetLastResError(){ return m_resError;}
 	RESERROR WritePngFile(LPCWSTR wszFilePath);
 	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType);
+	png_bytep * GetRowPointers() const
+	{
+		return m_rowPointers;
+	}
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;
