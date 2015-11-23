@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "ResManager.h"
+#include "UIFrameWnd.h"
 //#include "zlib.h"
 
 //#define PNG_DEBUG 3
@@ -284,15 +285,29 @@ void example_5()//test for libpng
 	int i = 1;
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+void example_6(HINSTANCE hInstance)
+{
+	if(!SUCCEEDED(CoInitialize(NULL)))
+		return;
+	
+	FrameWnd Demo;
+	if(Demo.Initialize(hInstance))
+	{
+		Demo.RunMessageLoop();
+	}
+
+	CoUninitialize();
+}
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int ShowCmd)
+//int _tmain(int argc, _TCHAR* argv[])
 {
 	//example_1();
 	//example_2();
 	//example_3();
 	
 	//example_4();
-	example_5();
-
+	//example_5();
+	example_6(hInstance);
 	return 0;
 }
 
