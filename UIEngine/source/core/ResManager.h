@@ -71,6 +71,10 @@ public:
 	{
 		return m_rowPointers;
 	}
+	png_infop GetPngInfo()
+	{
+		return m_pngInfoPtr;
+	}
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	virtual RESERROR Draw() = 0;

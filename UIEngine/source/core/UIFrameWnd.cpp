@@ -360,13 +360,31 @@ void FrameWnd::OnRender()
 		6.0f
 		);
 
-	ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
+	ResManager resManager(L"F:\\code\\ComBase\\trunk\\UIEngine\\docs");
 	RPicture *pic;
-	RESERROR resErr = resManager.GetResPicHandle("image.pngImage", &pic);
+	RESERROR resErr = resManager.GetResPicHandle("image.settingIcon", &pic);
 	if (RES_SUCCESS == resErr)
 	{
-		//创建位图 +++++++++++++++++++++++++++++++++++++++++++=
-		//m_pRenderTarget->CreateBitmap()
+		//创建位图
+		ID2D1Bitmap *pBitmap = NULL;
+		D2D1_PIXEL_FORMAT pixelFormat = PixelFormat(  
+			DXGI_FORMAT_B8G8R8A8_UNORM,  
+			D2D1_ALPHA_MODE_PREMULTIPLIED);
+
+		D2D1_BITMAP_PROPERTIES properties = {
+				pixelFormat,
+				0.0,
+				0.0
+		};
+		png_infop  pngInfo = pic->GetPngInfo();
+		png_bytep* rowPointers = pic->GetRowPointers();
+		UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
+		m_pRenderTarget->CreateBitmap(SizeU(44,44), rowPointers, pitch, properties, &pBitmap);
+		int i = 5;
+		m_pRenderTarget->Clear(ColorF(ColorF::White));
+
+		D2D1_RECT_F bitmapRect = RectF(10.0f, 210.0f, 54.0f, 254.0f);
+		m_pRenderTarget->DrawBitmap(pBitmap, bitmapRect);
 		//创建位图画刷
 	}
 	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
