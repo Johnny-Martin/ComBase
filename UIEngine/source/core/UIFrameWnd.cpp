@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIFrameWnd.h"
+#include "ResManager.h"
 
 bool FrameWnd::Initialize(HINSTANCE hInstance)
 {
@@ -98,7 +99,7 @@ BOOL FrameWnd::CreateDeviceIndependentResources()
 		D2D1_FACTORY_TYPE_SINGLE_THREADED,
 		&m_pD2DFactory
 		);
-
+	
 	return SUCCEEDED(hr);
 }
 
@@ -359,6 +360,17 @@ void FrameWnd::OnRender()
 		6.0f
 		);
 
+	ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
+	RPicture *pic;
+	RESERROR resErr = resManager.GetResPicHandle("image.pngImage", &pic);
+	if (RES_SUCCESS == resErr)
+	{
+		//创建位图 +++++++++++++++++++++++++++++++++++++++++++=
+		//m_pRenderTarget->CreateBitmap()
+		//创建位图画刷
+	}
+	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
+	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);
 	//
 	//结束绘制.
 	//
