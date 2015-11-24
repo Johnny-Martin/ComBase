@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "UIFrameWnd.h"
 #include "ResManager.h"
+#include "Wincodec.h"
+
+#pragma comment(lib, "Windowscodecs.lib")
 
 bool FrameWnd::Initialize(HINSTANCE hInstance)
 {
@@ -314,6 +317,100 @@ void FrameWnd::OnResize(UINT uWidth, UINT uHeight)
 	}
 }
 
+HRESULT LoadBitmapFromFile(
+						   ID2D1RenderTarget *pRenderTarget,
+						   IWICImagingFactory *pIWICFactory,
+						   PCWSTR uri,
+						   UINT destinationWidth,
+						   UINT destinationHeight,
+						   ID2D1Bitmap **ppBitmap
+						   )
+{
+	HRESULT hr = S_OK;
+
+	IWICBitmapDecoder *pDecoder = NULL;
+	IWICBitmapFrameDecode *pSource = NULL;
+	IWICStream *pStream = NULL;
+	IWICFormatConverter *pConverter = NULL;
+	IWICBitmapScaler *pScaler = NULL;
+
+	hr = pIWICFactory->CreateDecoderFromFilename(
+		uri,
+		NULL,
+		GENERIC_READ,
+		WICDecodeMetadataCacheOnLoad,
+		&pDecoder
+		);
+	if (SUCCEEDED(hr))
+	{
+
+		// Create the initial frame.
+		hr = pDecoder->GetFrame(0, &pSource);
+	}
+	if (SUCCEEDED(hr))
+	{
+		hr = pIWICFactory->CreateFormatConverter(&pConverter);
+	}
+	// If a new width or height was specified, create an
+	// IWICBitmapScaler and use it to resize the image.
+	if (destinationWidth != 0 || destinationHeight != 0)
+	{
+		UINT originalWidth, originalHeight;
+		hr = pSource->GetSize(&originalWidth, &originalHeight);
+		if (SUCCEEDED(hr))
+		{
+			if (destinationWidth == 0)
+			{
+				FLOAT scalar = static_cast<FLOAT>(destinationHeight) / static_cast<FLOAT>(originalHeight);
+				destinationWidth = static_cast<UINT>(scalar * static_cast<FLOAT>(originalWidth));
+			}
+			else if (destinationHeight == 0)
+			{
+				FLOAT scalar = static_cast<FLOAT>(destinationWidth) / static_cast<FLOAT>(originalWidth);
+				destinationHeight = static_cast<UINT>(scalar * static_cast<FLOAT>(originalHeight));
+			}
+
+			hr = pIWICFactory->CreateBitmapScaler(&pScaler);
+			if (SUCCEEDED(hr))
+			{
+				hr = pScaler->Initialize(
+					pSource,
+					destinationWidth,
+					destinationHeight,
+					WICBitmapInterpolationModeCubic
+					);
+			}
+			if (SUCCEEDED(hr))
+			{
+				hr = pConverter->Initialize(
+					pScaler,
+					GUID_WICPixelFormat32bppPBGRA,
+					WICBitmapDitherTypeNone,
+					NULL,
+					0.f,
+					WICBitmapPaletteTypeMedianCut
+					);
+			}
+		}
+	}
+	if (SUCCEEDED(hr))
+	{
+		// Create a Direct2D bitmap from the WIC bitmap.
+		hr = pRenderTarget->CreateBitmapFromWicBitmap(
+			pConverter,
+			NULL,
+			ppBitmap
+			);
+	}
+	SafeRelease(pDecoder);
+	SafeRelease(pSource);
+	SafeRelease(pStream);
+	SafeRelease(pConverter);
+	SafeRelease(pScaler);
+
+	return hr;
+}
+
 void FrameWnd::OnRender()
 {
 	//
@@ -360,32 +457,55 @@ void FrameWnd::OnRender()
 		6.0f
 		);
 
-	ResManager resManager(L"F:\\code\\ComBase\\trunk\\UIEngine\\docs");
+	ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
 	RPicture *pic;
 	RESERROR resErr = resManager.GetResPicHandle("image.settingIcon", &pic);
 	if (RES_SUCCESS == resErr)
 	{
 		//创建位图
 		ID2D1Bitmap *pBitmap = NULL;
-		D2D1_PIXEL_FORMAT pixelFormat = PixelFormat(  
-			DXGI_FORMAT_B8G8R8A8_UNORM,  
-			D2D1_ALPHA_MODE_PREMULTIPLIED);
+		D2D1_PIXEL_FORMAT pixelFormat = PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
 
-		D2D1_BITMAP_PROPERTIES properties = {
-				pixelFormat,
-				0.0,
-				0.0
-		};
-		png_infop  pngInfo = pic->GetPngInfo();
-		png_bytep* rowPointers = pic->GetRowPointers();
-		UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
-		m_pRenderTarget->CreateBitmap(SizeU(44,44), rowPointers, pitch, properties, &pBitmap);
+		D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 0.0, 0.0};
+		//png_infop  pngInfo = pic->GetPngInfo();
+		//png_bytep* rowPointers = pic->GetRowPointers();
+		//UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
+		//m_pRenderTarget->CreateBitmap(SizeU(44,44), rowPointers, pitch, properties, &pBitmap);
 		int i = 5;
-		m_pRenderTarget->Clear(ColorF(ColorF::White));
+		//m_pRenderTarget->Clear(ColorF(ColorF::White));
 
-		D2D1_RECT_F bitmapRect = RectF(10.0f, 210.0f, 54.0f, 254.0f);
-		m_pRenderTarget->DrawBitmap(pBitmap, bitmapRect);
+	   // ID2D1BitmapBrush bitmapBrush;
+		//m_pRenderTarget->CreateBitmapBrush(pBitmap, )
+		//D2D1_RECT_F bitmapRect = RectF(10.0f, 210.0f, 54.0f, 254.0f);
+		//m_pRenderTarget->DrawBitmap(pBitmap, bitmapRect);
 		//创建位图画刷
+		
+		IWICImagingFactory *pImgFactory = NULL;
+		hr = CoCreateInstance(
+			CLSID_WICImagingFactory,
+			NULL,
+			CLSCTX_INPROC,
+			IID_IWICImagingFactory,
+			reinterpret_cast<void **>(&pImgFactory)
+			);
+
+		LoadBitmapFromFile(m_pRenderTarget, pImgFactory,
+			L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.settingIcon.png",
+			88,
+			88,
+			&pBitmap
+			);
+		D2D1_POINT_2F upperLeftCorner = D2D1::Point2F(10.f, 180.f) ;
+		D2D1_SIZE_F size = pBitmap->GetSize() ;
+
+		m_pRenderTarget->DrawBitmap(
+			pBitmap,
+			D2D1::RectF(
+			upperLeftCorner.x,
+			upperLeftCorner.y,
+			upperLeftCorner.x + size.width,
+			upperLeftCorner.y + size.height)
+			);
 	}
 	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
 	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);
