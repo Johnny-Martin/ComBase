@@ -87,12 +87,23 @@ RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	m_rowPointers = (png_bytep*) malloc(sizeof(png_bytep) * m_pngHeight);
 	//m_rowPointers = new png_bytep[(sizeof(png_bytep) * m_pngHeight)];
 	
+	//ID2D1HwndRenderTarget::CreateBitmap only support continuous png pixel data in memory
+	//allocate a continuous memory for m_rowPointers so that Image can return m_rowPointers
+	//directly in GetPngPixelArray
+	png_uint_32 rowSize = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
+	png_byte* pngPixelData = (png_byte*) malloc(rowSize * m_pngHeight);
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
 	{
-		png_uint_32 size = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
-		m_rowPointers[rowIndex] = (png_byte*) malloc(size);
+		png_byte *rowHead = (png_byte*)((int)pngPixelData + rowIndex * rowSize);
+		m_rowPointers[rowIndex] = (png_byte*) rowHead;
 	}
 
+	//Old memory allocation
+	//for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+	//{
+	//	png_uint_32 size = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
+	//	m_rowPointers[rowIndex] = (png_byte*) malloc(size);
+	//}
 	png_read_image(m_pngStructPtr, m_rowPointers);
 
 	fclose(fp);

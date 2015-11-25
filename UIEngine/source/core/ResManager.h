@@ -49,10 +49,10 @@ public:
 		//thus release with free()
 		if (m_rowPointers)
 		{
-			for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
-				free(m_rowPointers[rowIndex]);
+			//for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+				//free(m_rowPointers[rowIndex]);
 
-			free(m_rowPointers);
+			free(m_rowPointers[0]);
 		}
 		
 		if (m_pngStructPtr && m_pngInfoPtr)

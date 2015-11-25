@@ -475,12 +475,7 @@ void FrameWnd::OnRender()
 		png_bytep* rowPointers = pic->GetRowPointers();
 
 		UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
-		png_byte* pngData = new png_byte[pitch * pngInfo->height];
-		for (UINT row=0; row<pngInfo->height; ++row)
-			for (UINT column=0; column<pitch; ++column)
-				pngData[row*pitch + column] = rowPointers[row][column];
-			
-		hr = m_pRenderTarget->CreateBitmap(SizeU( pngInfo->width, pngInfo->height), (void *)pngData, pitch , properties, &pBitmap);
+		hr = m_pRenderTarget->CreateBitmap(SizeU( pngInfo->width, pngInfo->height), (void *)rowPointers[0], pitch , properties, &pBitmap);
 		//m_pRenderTarget->Clear(ColorF(ColorF::White));
 
 	    //ID2D1BitmapBrush bitmapBrush;
