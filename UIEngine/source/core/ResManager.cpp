@@ -264,6 +264,19 @@ RESERROR RTexture::DetectHorizontalLine()
 }
 RESERROR RTexture::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
+	ID2D1Bitmap *pBitmap = NULL; //DXGI_FORMAT_R8G8B8A8_UNORM DXGI_FORMAT_B8G8R8A8_UNORM
+	D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);//D2D1_ALPHA_MODE_IGNORE
+	D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
+	
+	UINT pitch = m_pngWidth * m_pixelDepth / 8;
+	HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU( m_pngWidth, m_pngHeight), (void *)m_rowPointers[0], pitch , properties, &pBitmap);
+
+	if (SUCCEEDED(hr))
+	{
+		D2D1_RECT_F dstRect = D2D1::RectF(left ,top, left + m_pngWidth, top + m_pngHeight);
+		pRenderTarget->DrawBitmap(pBitmap, dstRect);
+	}
+	
 	return RES_SUCCESS;
 }
 RESERROR RPicList::LoadResource(LPCWSTR wszResPath)

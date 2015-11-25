@@ -465,53 +465,7 @@ void FrameWnd::OnRender()
 	if (RES_SUCCESS == resErr)
 	{
 		pic->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\AAA.png");
-		//创建位图  //DXGI_FORMAT_A8_UNORM, D2D1_ALPHA_MODE_STRAIGHT
-		//DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED
-		ID2D1Bitmap *pBitmap = NULL; //DXGI_FORMAT_R8G8B8A8_UNORM DXGI_FORMAT_B8G8R8A8_UNORM
-		D2D1_PIXEL_FORMAT pixelFormat = PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);//D2D1_ALPHA_MODE_IGNORE
-
-		D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
-		png_infop  pngInfo = pic->GetPngInfo();
-		png_bytep* rowPointers = pic->GetRowPointers();
-
-		UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
-		hr = m_pRenderTarget->CreateBitmap(SizeU( pngInfo->width, pngInfo->height), (void *)rowPointers[0], pitch , properties, &pBitmap);
-		//m_pRenderTarget->Clear(ColorF(ColorF::White));
-
-	    //ID2D1BitmapBrush bitmapBrush;
-		//m_pRenderTarget->CreateBitmapBrush(pBitmap, )
-		//D2D1_RECT_F bitmapRect = RectF(10.0f, 210.0f, 54.0f, 254.0f);
-		//m_pRenderTarget->DrawBitmap(pBitmap, bitmapRect);
-		//创建位图画刷
-		/*
-		IWICImagingFactory *pImgFactory = NULL;
-		hr = CoCreateInstance(
-			CLSID_WICImagingFactory,
-			NULL,
-			CLSCTX_INPROC,
-			IID_IWICImagingFactory,
-			reinterpret_cast<void **>(&pImgFactory)
-			);
-
-		LoadBitmapFromFile(m_pRenderTarget, pImgFactory,
-			L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.settingIcon.png",
-			88,
-			66,
-			&pBitmap
-			);*/
-		D2D1_POINT_2F upperLeftCorner = D2D1::Point2F(10.f, 180.f) ;
-		D2D1_SIZE_F size = pBitmap->GetSize() ;
-
-		m_pRenderTarget->DrawBitmap(
-			pBitmap,
-			D2D1::RectF(
-			upperLeftCorner.x,
-			upperLeftCorner.y,
-			upperLeftCorner.x + size.width,
-			upperLeftCorner.y + size.height)
-			);
-
-		//SafeRelease(pImgFactory);
+		pic->Draw(m_pRenderTarget, 120, 210, 54, 254);
 	}
 	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
 	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);

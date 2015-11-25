@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "png.h"
-#include <d2d1.h>
 
 using namespace std;
 
@@ -76,9 +75,9 @@ public:
 	{
 		return m_pngInfoPtr;
 	}
+	virtual RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
-	virtual RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
 	RESERROR ReadPngFile(LPCWSTR wszFilePath);
 	
 	

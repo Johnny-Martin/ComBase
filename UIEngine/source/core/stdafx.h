@@ -24,6 +24,11 @@
 #include <stack>
 #include <map>
 
+#include <d2d1.h>
+#include <dwrite.h>
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+
 #define RGBA(r,g,b,a)  ((COLORREF) (((DWORD)(BYTE)(a))<<24 | (RGB(r,g,b))))
 
 #define WARNING_HWND_MSG(hWnd, WarningStr) \
