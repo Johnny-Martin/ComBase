@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "png.h"
+#include <d2d1.h>
 
 using namespace std;
 
@@ -77,7 +78,7 @@ public:
 	}
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
-	virtual RESERROR Draw() = 0;
+	virtual RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
 	RESERROR ReadPngFile(LPCWSTR wszFilePath);
 	
 	
@@ -114,7 +115,7 @@ public:
 		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw();
+	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 private:
 	
@@ -135,7 +136,11 @@ private:
 class RTexture: public RPicture
 {
 public:
-	RTexture():m_purpleLineColor(RGB(255,0,255)){};
+	RTexture():m_purpleLineColor(RGB(255,0,255))
+			   ,m_pExpandedPixelData(NULL)
+			   ,m_expandedTextureWidth(0)
+			   ,m_expandedTextureHeight(m_expandedTextureHeight)
+	{};
 	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGB(255,0,255))
 	{
 		//LoadResource(wszResPath);
@@ -166,7 +171,7 @@ public:
 		}
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw();
+	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 	RESERROR DetectVerticalLine();
 	RESERROR DetectHorizontalLine();
@@ -189,6 +194,9 @@ private:
 	vector<unsigned int> m_arrHorizontalLinePos;
 	const COLORREF m_purpleLineColor;
 	TEXTURE_TYPE m_textureType;
+	png_byte* m_pExpandedPixelData;
+	UINT m_expandedTextureWidth;
+	UINT m_expandedTextureHeight;
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
@@ -243,7 +251,7 @@ public:
 	}
 	
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(){ return RES_SUCCESS;};//RPicList do not need a draw function
+	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
 	RESERROR DetectVerticalLine();
 	RESERROR CreatePicFromMem();

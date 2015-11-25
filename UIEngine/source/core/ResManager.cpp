@@ -207,7 +207,7 @@ RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
 }
-RESERROR RImage::Draw()
+RESERROR RImage::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	return RES_SUCCESS;
 }
@@ -262,7 +262,7 @@ RESERROR RTexture::DetectHorizontalLine()
 	}
 	return RES_SUCCESS;
 }
-RESERROR RTexture::Draw()
+RESERROR RTexture::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	return RES_SUCCESS;
 }
