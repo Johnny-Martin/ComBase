@@ -461,10 +461,10 @@ void FrameWnd::OnRender()
 
 	ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
 	RPicture *pic;
-	RESERROR resErr = resManager.GetResPicHandle("image.settingIcon", &pic);
+	RESERROR resErr = resManager.GetResPicHandle("texture.NineInOne.wndbkg_shadow", &pic);
 	if (RES_SUCCESS == resErr)
 	{
-		//pic->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\AAA.png");
+		pic->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\AAA.png");
 		//´´½¨Î»Í¼  //DXGI_FORMAT_A8_UNORM, D2D1_ALPHA_MODE_STRAIGHT
 		//DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED
 		ID2D1Bitmap *pBitmap = NULL; //DXGI_FORMAT_R8G8B8A8_UNORM DXGI_FORMAT_B8G8R8A8_UNORM
@@ -473,8 +473,14 @@ void FrameWnd::OnRender()
 		D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
 		png_infop  pngInfo = pic->GetPngInfo();
 		png_bytep* rowPointers = pic->GetRowPointers();
+
 		UINT pitch = pngInfo->width * pngInfo->pixel_depth / 8;
-		hr = m_pRenderTarget->CreateBitmap(SizeU( pngInfo->width*4, pngInfo->height*4), (void *)rowPointers, 44*4 , properties, &pBitmap);
+		png_byte* pngData = new png_byte[pitch * pngInfo->height];
+		for (UINT row=0; row<pngInfo->height; ++row)
+			for (UINT column=0; column<pitch; ++column)
+				pngData[row*pitch + column] = rowPointers[row][column];
+			
+		hr = m_pRenderTarget->CreateBitmap(SizeU( pngInfo->width, pngInfo->height), (void *)pngData, pitch , properties, &pBitmap);
 		//m_pRenderTarget->Clear(ColorF(ColorF::White));
 
 	    //ID2D1BitmapBrush bitmapBrush;
