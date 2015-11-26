@@ -136,37 +136,31 @@ class RTexture: public RPicture
 {
 public:
 	RTexture():m_purpleLineColor(RGB(255,0,255))
-			   ,m_pExpandedPixelData(NULL)
-			   ,m_expandedTextureWidth(0)
-			   ,m_expandedTextureHeight(m_expandedTextureHeight)
-	{};
+	{
+		InitMemberVariable();
+	};
 	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGB(255,0,255))
 	{
+		InitMemberVariable();
 		//LoadResource(wszResPath);
 		SetResID(szResID);
 		SetTextureType(szResID);
-		ReadPngFile(wszResPath);
+		m_resError = ReadPngFile(wszResPath);
+		if (RES_SUCCESS == m_resError)
+		{
+			ProcessTexture();
+		}
 	};
 	//create a texture object with a two-dimensional array, and assign the png width and height
 	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType):m_purpleLineColor(RGB(255,0,255))
 	{
+		InitMemberVariable();
 		SetResID(szResID);
 		SetTextureType(szResID);
 		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 		if (RES_SUCCESS == m_resError)
 		{
-			if (THREE_V == m_textureType)
-			{
-				DetectVerticalLine();
-			}else if (NINE == m_textureType)
-			{
-				DetectVerticalLine();
-				DetectHorizontalLine();
-			}else if (THREE_H == m_textureType)
-			{
-				DetectHorizontalLine();
-			}else
-				abort();
+			ProcessTexture();
 		}
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
@@ -187,15 +181,44 @@ private:
 		else
 			abort();
 	}
+	void InitMemberVariable()
+	{
+		m_pExpandedPixelData = NULL;
+		m_expandedTextureWidth = 0;
+		m_expandedTextureHeight = 0;
+		m_pTopLeftBitmap = NULL;
+		m_pTopMiddleBitmap = NULL;
+		m_pTopRightBitmap = NULL;
+		m_pMiddleLeftBitmap = NULL;
+		m_pMiddleMiddleBitmap = NULL;
+		m_pMiddleRightBitmap = NULL;
+		m_pBottomLeftBitmap = NULL;
+		m_pBottomMiddleBitmap = NULL;
+		m_pBottomRightBitmap = NULL;
+	}
+	RESERROR ProcessTexture();
+	RESERROR CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget);
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrVerticalLinePos;
 	//horizontal dividing line's position in vertical direction
 	vector<unsigned int> m_arrHorizontalLinePos;
+	vector<ID2D1Bitmap*> m_arrD2D1Bitmap;
 	const COLORREF m_purpleLineColor;
 	TEXTURE_TYPE m_textureType;
 	png_byte* m_pExpandedPixelData;
 	UINT m_expandedTextureWidth;
 	UINT m_expandedTextureHeight;
+	ID2D1Bitmap* m_pTopLeftBitmap;
+	ID2D1Bitmap* m_pTopMiddleBitmap;
+	ID2D1Bitmap* m_pTopRightBitmap;
+	ID2D1Bitmap* m_pMiddleLeftBitmap;
+	ID2D1Bitmap* m_pMiddleMiddleBitmap;
+	ID2D1Bitmap* m_pMiddleRightBitmap;
+	ID2D1Bitmap* m_pBottomLeftBitmap;
+	ID2D1Bitmap* m_pBottomMiddleBitmap;
+	ID2D1Bitmap* m_pBottomRightBitmap;
+
+
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
