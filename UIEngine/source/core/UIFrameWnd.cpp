@@ -459,13 +459,14 @@ void FrameWnd::OnRender()
 		6.0f
 		);
 
-	ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
-	RPicture *pic;
-	RESERROR resErr = resManager.GetResPicHandle("texture.NineInOne.wndbkg_shadow", &pic);
-	if (RES_SUCCESS == resErr)
+	//ResManager resManager(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs");
+	//RPicture *pic;
+	//RESERROR resErr = resManager.GetResPicHandle("texture.NineInOne.wndbkg_shadow", &pic);
+	//if (RES_SUCCESS == resErr)
 	{
-		pic->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\AAA.png");
-		pic->Draw(m_pRenderTarget, 120, 210, 54, 254);
+		RTexture* pic = new RTexture(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
+		pic->WritePngFile(L"E:\\code\\ComBase\\trunk\\UIEngine\\docs\\AAABBB.png");
+		pic->Draw(m_pRenderTarget, 120, 210, 340, 540);
 	}
 	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
 	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);
