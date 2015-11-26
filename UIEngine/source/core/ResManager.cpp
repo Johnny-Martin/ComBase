@@ -262,19 +262,154 @@ RESERROR RTexture::DetectHorizontalLine()
 	}
 	return RES_SUCCESS;
 }
+RESERROR RTexture::ProcessTexture()
+{
+	if (THREE_V == m_textureType)
+	{
+		m_resError = DetectVerticalLine();
+		if (RES_SUCCESS == m_resError)
+		{
+
+		}
+	}else if (NINE == m_textureType)
+	{
+		DetectVerticalLine();
+		DetectHorizontalLine();
+	}else if (THREE_H == m_textureType)
+	{
+		DetectHorizontalLine();
+	}else
+		abort();
+	return RES_SUCCESS;
+}
+RESERROR RTexture::CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget)
+{
+	if (THREE_V == m_textureType)
+	{
+
+	}else if (NINE == m_textureType)
+	{
+		int lastBlockXEnd = -1;
+		int lastBlockYEnd = -1;
+		m_arrVerticalLinePos.push_back(m_pngWidth);
+		m_arrHorizontalLinePos.push_back(m_pngHeight);
+		for (int i=0; i<9; ++i)
+		{
+			if (i%3 == 0)
+				lastBlockXEnd = -1;
+			else
+				lastBlockXEnd = m_arrVerticalLinePos[i%3 - 1];
+
+			if (i/3 == 0)
+				lastBlockYEnd = -1;
+			else
+				lastBlockYEnd = m_arrHorizontalLinePos[i/3 - 1];
+
+			UINT curBlockWidth  = m_arrVerticalLinePos[i%3] - lastBlockXEnd - 1;
+			UINT curBlockHeight = m_arrHorizontalLinePos[i/3] - lastBlockYEnd - 1;
+
+			UINT pngRowSize = m_pngWidth*m_pixelDepth/8;
+			UINT curBlockRowSize = curBlockWidth*m_pixelDepth/8;
+			png_byte* curBlockData = (png_byte*) malloc(curBlockHeight*curBlockRowSize);
+			png_byte* pngData = m_rowPointers[0];
+
+			for (UINT rowIndex=0; rowIndex<curBlockHeight; ++rowIndex)
+				for (UINT columnIndex=0; columnIndex<curBlockRowSize; ++columnIndex)
+				{
+					UINT offset = (lastBlockXEnd + 1)*m_pixelDepth/8 + (rowIndex + lastBlockYEnd + 1)*pngRowSize + columnIndex;
+					curBlockData[rowIndex*curBlockRowSize + columnIndex] = pngData[offset];
+				}
+			
+			D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+			D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
+			ID2D1Bitmap *pBitmap = NULL;
+			HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU(curBlockWidth, curBlockHeight), (void *)curBlockData, curBlockRowSize , properties, &pBitmap);
+			if (SUCCEEDED(hr))
+			{
+				m_arrD2D1Bitmap.push_back(pBitmap);
+			}
+			//delete curBlockData
+			free(curBlockData);
+		}
+
+		m_arrVerticalLinePos.pop_back();
+		m_arrHorizontalLinePos.pop_back();
+
+	}else if (THREE_H == m_textureType)
+	{
+	}else
+		abort();
+	return RES_SUCCESS;
+}
 RESERROR RTexture::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
+	if (m_arrD2D1Bitmap.size() == 0)
+	{
+		CreateD2D1Bitmap(pRenderTarget);
+	}
 	ID2D1Bitmap *pBitmap = NULL; //DXGI_FORMAT_R8G8B8A8_UNORM DXGI_FORMAT_B8G8R8A8_UNORM
 	D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);//D2D1_ALPHA_MODE_IGNORE
 	D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
 	
 	UINT pitch = m_pngWidth * m_pixelDepth / 8;
-	HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU( m_pngWidth, m_pngHeight), (void *)m_rowPointers[0], pitch , properties, &pBitmap);
+	//HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU( m_pngWidth, m_pngHeight), (void *)m_rowPointers[0], pitch , properties, &pBitmap);
 
-	if (SUCCEEDED(hr))
+	//if (SUCCEEDED(hr))
 	{
-		D2D1_RECT_F dstRect = D2D1::RectF(left ,top, left + m_pngWidth, top + m_pngHeight);
-		pRenderTarget->DrawBitmap(pBitmap, dstRect);
+		D2D1_RECT_F dstRect = D2D1::RectF(left ,top, right, bottom);
+		if (NINE == m_textureType)
+		{
+			pBitmap		   = m_arrD2D1Bitmap[0];
+			dstRect.right  = left + m_arrVerticalLinePos[0];
+			dstRect.bottom = top + m_arrHorizontalLinePos[0];
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[1];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right - (m_pngWidth - m_arrVerticalLinePos[1]);
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[2];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right;
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[3];
+			dstRect.left   = left;
+			dstRect.top	   = dstRect.bottom;
+			dstRect.right  = left + m_arrVerticalLinePos[0];
+			dstRect.bottom = bottom - (m_pngHeight - m_arrHorizontalLinePos[1]);
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[4];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right - (m_pngWidth - m_arrVerticalLinePos[1]);
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[5];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right;
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[6];
+			dstRect.left   = left;
+			dstRect.right  = left + m_arrVerticalLinePos[0];
+			dstRect.top    = dstRect.bottom;
+			dstRect.bottom = bottom;
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap		   = m_arrD2D1Bitmap[7];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right - (m_pngWidth - m_arrVerticalLinePos[1]);
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+
+			pBitmap = m_arrD2D1Bitmap[8];
+			dstRect.left   = dstRect.right;
+			dstRect.right  = right;
+			pRenderTarget->DrawBitmap(pBitmap, dstRect);
+		}
+		//D2D1_RECT_F dstRect = D2D1::RectF(left ,top, left + m_pngWidth, top + m_pngHeight);
+	
 	}
 	
 	return RES_SUCCESS;
