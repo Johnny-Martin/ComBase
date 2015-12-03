@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ResManager.h"
 #include "png.h"
+#include <sstream>
 
 bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineColor)
 {
@@ -88,8 +89,8 @@ RESERROR RPicture::ReadPngFile(LPCWSTR wszFilePath)
 	//m_rowPointers = new png_bytep[(sizeof(png_bytep) * m_pngHeight)];
 	
 	//ID2D1HwndRenderTarget::CreateBitmap only support continuous png pixel data in memory
-	//allocate a continuous memory for m_rowPointers so that Image can return m_rowPointers
-	//directly in GetPngPixelArray
+	//allocate a continuous memory for m_rowPointers so that class "Image"  can return 
+	//m_rowPointers directly in GetPngPixelArray
 	png_uint_32 rowSize = png_get_rowbytes(m_pngStructPtr,m_pngInfoPtr);
 	png_byte* pngPixelData = (png_byte*) malloc(rowSize * m_pngHeight);
 	for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
@@ -282,6 +283,59 @@ RESERROR RTexture::ProcessTexture()
 		abort();
 	return RES_SUCCESS;
 }
+string num2str(UINT i)
+{
+	char str[25] = {0};
+	str[0] = '0';
+	str[1] = '0';
+	str[2] = '0';
+	if (i<10)
+	{
+		itoa(i, &str[2],10);
+	}else if (i<100)
+	{
+		itoa(i, &str[1],10);
+	}else
+	{
+		itoa(i, str,10);
+	}
+	
+	string ret(str);
+	return ret;
+}
+void PrintPngPixelData(png_byte* pngData, UINT pixelWidth, UINT pixelHeight, UINT pixelColorDepth)
+{
+	std::ofstream outFile("E:\\data.txt", ios::app);
+
+	UINT pngRowSize = pixelWidth*pixelColorDepth/8;
+	UINT size = pngRowSize*pixelHeight;
+	UCHAR Red = 0;
+	UCHAR Green = 0;
+	UCHAR Blue = 0;
+	UCHAR Alpha = 0;
+	for (UINT index=0; index<size; ++index)
+	{
+		if (index%pngRowSize == 0)
+			outFile<<"["<<num2str(index)<<"]";
+
+		Red   = pngData[index];
+		Green = pngData[++index];
+		Blue  = pngData[++index];
+		outFile<<"("<<num2str(Red)<<","<<num2str(Green)<<","<<num2str(Blue);
+		if (pixelColorDepth == 32)
+		{
+			Alpha = pngData[++index];
+			outFile<<","<<num2str(Alpha);
+		}
+		outFile<<")";
+
+		if (index%pngRowSize == (pngRowSize - 1))
+			outFile<<endl;
+
+	}
+	outFile<<endl;
+	outFile.close();
+}
 RESERROR RTexture::CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget)
 {
 	if (THREE_V == m_textureType)
@@ -309,18 +363,38 @@ RESERROR RTexture::CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget)
 			UINT curBlockHeight = m_arrHorizontalLinePos[i/3] - lastBlockYEnd - 1;
 
 			UINT pngRowSize = m_pngWidth*m_pixelDepth/8;
-			UINT curBlockRowSize = curBlockWidth*m_pixelDepth/8;
+			UINT curBlockRowSize = curBlockWidth*4;
+			//curBlockData for ID2D1Bitmap must be 32bits pixel-width
 			png_byte* curBlockData = (png_byte*) malloc(curBlockHeight*curBlockRowSize);
+			memset(curBlockData, 0xff, curBlockHeight*curBlockRowSize);
 			png_byte* pngData = m_rowPointers[0];
 
-			for (UINT rowIndex=0; rowIndex<curBlockHeight; ++rowIndex)
-				for (UINT columnIndex=0; columnIndex<curBlockRowSize; ++columnIndex)
-				{
-					UINT offset = (lastBlockXEnd + 1)*m_pixelDepth/8 + (rowIndex + lastBlockYEnd + 1)*pngRowSize + columnIndex;
-					curBlockData[rowIndex*curBlockRowSize + columnIndex] = pngData[offset];
-				}
+			PrintPngPixelData(pngData, m_pngWidth, m_pngHeight, m_pixelDepth);
+
+			if (4 == m_pixelDepth/8)
+			{
+				for (UINT rowIndex=0; rowIndex<curBlockHeight; ++rowIndex)
+					for (UINT columnIndex=0; columnIndex<curBlockRowSize; ++columnIndex)
+					{
+						UINT offset = (lastBlockXEnd + 1)*4 + (rowIndex + lastBlockYEnd + 1)*pngRowSize + columnIndex;
+						curBlockData[rowIndex*curBlockRowSize + columnIndex] = pngData[offset];
+					}
+			}else
+			{
+				for (UINT rowIndex=0; rowIndex<curBlockHeight; ++rowIndex)
+					for (UINT columnPixelIndex=0; columnPixelIndex<curBlockWidth; ++columnPixelIndex)
+					{
+						UINT srcPngDataOffset = (lastBlockXEnd + 1)*3 + (rowIndex + lastBlockYEnd + 1)*pngRowSize + columnPixelIndex*3;
+						UINT dstBlockDataOffset = rowIndex*curBlockRowSize + columnPixelIndex*4;
+						curBlockData[dstBlockDataOffset] = pngData[srcPngDataOffset];
+						curBlockData[dstBlockDataOffset + 1] = pngData[srcPngDataOffset + 1];
+						curBlockData[dstBlockDataOffset + 2] = pngData[srcPngDataOffset + 2];
+					}
+			}
 			
-			D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+			PrintPngPixelData(curBlockData, curBlockWidth, curBlockHeight, 32);
+
+			D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
 			D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
 			ID2D1Bitmap *pBitmap = NULL;
 			HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU(curBlockWidth, curBlockHeight), (void *)curBlockData, curBlockRowSize , properties, &pBitmap);
@@ -361,7 +435,7 @@ RESERROR RTexture::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT to
 		{
 			pBitmap		   = m_arrD2D1Bitmap[0];
 			dstRect.right  = left + m_arrVerticalLinePos[0];
-			dstRect.bottom = top + m_arrHorizontalLinePos[0];
+			dstRect.bottom = top + m_arrHorizontalLinePos[0]; 
 			pRenderTarget->DrawBitmap(pBitmap, dstRect);
 
 			pBitmap		   = m_arrD2D1Bitmap[1];
@@ -457,7 +531,7 @@ RESERROR RPicList::CreatePicFromMem()
 	if (m_arrVerticalLinePos.size() <= 0)
 		return RES_ERROR_UNKNOWN;
 
-	png_bytep* pngDataPtr = NULL;
+	png_bytep* pngRowPtr = NULL;
 	vector<unsigned int>::iterator iter = m_arrVerticalLinePos.begin();
 	
 	//a virtual dividing line before 0 column
@@ -469,18 +543,27 @@ RESERROR RPicList::CreatePicFromMem()
 	{
 		unsigned int curDivideLinePos = m_arrVerticalLinePos[verticalLineIndex];
 		unsigned int newWidth = curDivideLinePos - lastDivideLinePos - 1;
-		pngDataPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
-		
+		pngRowPtr = (png_bytep*) malloc(m_pngHeight * sizeof(png_bytep));
 		unsigned int bytesPerPixel = m_pixelDepth/8;
+
+		//The same with RPicture::ReadPngFile
+		//ID2D1HwndRenderTarget::CreateBitmap only support continuous png pixel data in memory
+		//allocate a continuous memory for m_rowPointers so that class "Image"  can return 
+		//m_rowPointers directly in GetPngPixelArray
+		png_byte* pngPixelData = (png_byte*) malloc(m_pngHeight*newWidth*bytesPerPixel);
+
+		
 		for (unsigned int rowIndex=0; rowIndex < m_pngHeight; ++rowIndex)
 		{
-			pngDataPtr[rowIndex] = (png_byte*) malloc(newWidth*bytesPerPixel);
+			png_byte *rowHead = (png_byte*)((int)pngPixelData + rowIndex * newWidth * bytesPerPixel);
+			pngRowPtr[rowIndex] = (png_byte*) rowHead;
+			//pngRowPtr[rowIndex] = (png_byte*) malloc(newWidth*bytesPerPixel);
 			
 			//copy png pixel data row by row, it takes *four* bytes per pixel
 			for (unsigned int columnIndex=0; columnIndex < newWidth; ++columnIndex)
 			{
 				unsigned int srcPngPixelPos = lastDivideLinePos + columnIndex + 1;
-				png_byte* dstPtr = &(pngDataPtr[rowIndex][columnIndex*bytesPerPixel]);
+				png_byte* dstPtr = &(pngRowPtr[rowIndex][columnIndex*bytesPerPixel]);
 				png_byte* srcPtr = &(m_rowPointers[rowIndex][srcPngPixelPos*bytesPerPixel]);
 
 				for (unsigned int i=0; i<bytesPerPixel; ++i)
@@ -496,9 +579,9 @@ RESERROR RPicList::CreatePicFromMem()
 		textureId += szIndex;
 		RPicture* pPicObj = NULL;
 		if (TEXTURELIST == m_picListType)
-			pPicObj = new RTexture(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
+			pPicObj = new RTexture(textureId.c_str(), pngRowPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
 		else
-			pPicObj = new RImage(textureId.c_str(), pngDataPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
+			pPicObj = new RImage(textureId.c_str(), pngRowPtr, newWidth, m_pngHeight, m_bitDepth, m_colorType);
 		
 		m_picListVector.push_back(pPicObj);
 	}
