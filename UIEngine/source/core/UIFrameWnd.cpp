@@ -126,7 +126,7 @@ BOOL FrameWnd::CreateDeviceDependentResources()
 	D2D1_PIXEL_FORMAT pixelFormat =  PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
 	HRESULT hr = NULL;
 	hr = m_pD2DFactory->CreateHwndRenderTarget(
-		RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_HARDWARE,
+		RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,
 								pixelFormat),
 		HwndRenderTargetProperties(m_hWnd, size),
 		&m_pRenderTarget
@@ -413,6 +413,8 @@ HRESULT LoadBitmapFromFile(
 	return hr;
 }
 
+ResManager resManager(L"I:\\UIEngine\\docs");
+RPicture* pic = NULL;
 void FrameWnd::OnRender()
 {
 	//
@@ -459,15 +461,20 @@ void FrameWnd::OnRender()
 		6.0f
 		);
 
-	/*ResManager resManager(L"I:\\UIEngine\\docs");
-	RPicture *pic;
-	RESERROR resErr = resManager.GetResPicHandle("texturelist.Nine.btnbkg.4", &pic);
-	if (RES_SUCCESS == resErr)*/
+	
+	if (NULL == pic)
 	{
-		RTexture* pic = new RTexture(L"I:\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
-		pic->WritePngFile(L"I:\\UIEngine\\docs\\AAABBB.png");
-		pic->Draw(m_pRenderTarget, 120, 210, 340, 440);
+		//RESERROR resErr = resManager.GetResPicHandle("texturelist.Nine.btnbkg.4", &pic);
+		//if (RES_SUCCESS == resErr)/**/
+		{
+			pic = new RTexture(L"I:\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
+			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeV.xBtnBkg_Hover.png", "texture.ThreeV.xBtnBkg_Hover");
+			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeH.listctrl_scroll_bkg.png", "texture.ThreeH.listctrl_scroll_bkg");
+			pic->WritePngFile(L"I:\\UIEngine\\docs\\AAABBB.png");	
+		}
 	}
+	pic->Draw(m_pRenderTarget, 120, 210, 340, 440);
+
 	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
 	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);
 	//
