@@ -198,6 +198,13 @@ private:
 	}
 	RESERROR ProcessTexture();
 	RESERROR CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_Nine(ID2D1HwndRenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_ThreeV(ID2D1HwndRenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_ThreeH(ID2D1HwndRenderTarget* pRenderTarget);
+
+	RESERROR _Draw_Nine(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR _Draw_ThreeV(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR _Draw_ThreeH(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrVerticalLinePos;
 	//horizontal dividing line's position in vertical direction
