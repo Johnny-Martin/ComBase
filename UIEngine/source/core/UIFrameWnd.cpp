@@ -17,7 +17,7 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 	wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wcex.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
 	wcex.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-	wcex.hbrBackground = NULL;
+	wcex.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
 	wcex.lpszClassName = _T("FrameWnd");
 
 	if(!RegisterClassEx(&wcex))
@@ -26,13 +26,11 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 		return false;
 	}
 
-	//
 	// 创建窗口.
-	//
-	m_hWnd = CreateWindow(
+	m_hWnd = CreateWindowEx(WS_EX_TOPMOST,
 		_T("FrameWnd"),
 		_T("FrameWnd Demo -- MJT"),
-		WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX,
+		WS_POPUP,//WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		480,
@@ -43,9 +41,7 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 		this			//保存this指针.
 		);
 
-	//
 	// 创建D2D资源.
-	//
 	if(!CreateDeviceIndependentResources() || !CreateDeviceDependentResources())
 	{
 		WARNING_HWND_MSG(m_hWnd, _T("创建Dirct2D资源失败!"));
@@ -57,6 +53,24 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 	{
 		ShowWindow(m_hWnd, SW_SHOWNORMAL);
 		UpdateWindow(m_hWnd);
+
+/*		RECT wndRect;  
+		::GetWindowRect(m_hWnd,&wndRect);  
+		SIZE wndSize = {wndRect.right-wndRect.left,wndRect.bottom-wndRect.top};  
+		HDC hdc = ::GetDC(m_hWnd);  
+		m_hWndDC = ::CreateCompatibleDC(hdc);  
+		
+		HDC screenDC = GetDC(NULL);  
+		POINT ptSrc = {0,0};  
+
+		BLENDFUNCTION blendFunction;  
+		blendFunction.AlphaFormat = AC_SRC_ALPHA;  
+		blendFunction.BlendFlags = 0;  
+		blendFunction.BlendOp = AC_SRC_OVER;  
+		blendFunction.SourceConstantAlpha = 255;  
+		UpdateLayeredWindow(m_hWnd,screenDC,&ptSrc,&wndSize,m_hWndDC,&ptSrc,0,&blendFunction,2);*/  
+
+		//::DeleteDC(memDC);  
 	}else
 	{
 		return false;
@@ -67,37 +81,9 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 	return TRUE;
 }
 
-//
-// 丢弃依赖于设备的资源.
-//
-void FrameWnd::DiscardDeviceDependentResources()
-{
-	SafeRelease(m_pLGBrush);
-	SafeRelease(m_pRGBrush);
-	SafeRelease(m_pSolidBrush);
-	SafeRelease(m_pRenderTarget);
-}
-
-
-//
-// 丢弃设备无关资源.
-//
-void FrameWnd::DiscardDeviceIndependentResources()
-{
-	SafeRelease(m_pD2DFactory);
-}
-
-
-//
-// 创建依赖于非设备的资源.
-//
 BOOL FrameWnd::CreateDeviceIndependentResources()
 {
 	HRESULT hr = NULL;
-
-	//
-	// 创建D2D工厂.
-	//
 	hr = D2D1CreateFactory(
 		D2D1_FACTORY_TYPE_SINGLE_THREADED,
 		&m_pD2DFactory
@@ -106,10 +92,6 @@ BOOL FrameWnd::CreateDeviceIndependentResources()
 	return SUCCEEDED(hr);
 }
 
-
-//
-// 创建依赖于设备的资源.
-//
 BOOL FrameWnd::CreateDeviceDependentResources()
 {
 	RECT rc;
@@ -124,106 +106,34 @@ BOOL FrameWnd::CreateDeviceDependentResources()
 	// 创建D2D目标绘制区域.
 	//DXGI_FORMAT_B8G8R8A8_UNORM
 	D2D1_PIXEL_FORMAT pixelFormat =  PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
 	HRESULT hr = NULL;
 	hr = m_pD2DFactory->CreateHwndRenderTarget(
-		RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,
-								pixelFormat),
+		renderTargetProperties,
 		HwndRenderTargetProperties(m_hWnd, size),
 		&m_pRenderTarget
 		);
 
-	//
-	// 创建纯色画刷.
-	//
-	if(SUCCEEDED(hr))
+	//To enable the device context (DC) render target to work with GDI, set the DXGI format 
+	//to DXGI_FORMAT_B8G8R8A8_UNORM and the alpha mode to D2D1_ALPHA_MODE_PREMULTIPLIED or 
+	//D2D1_ALPHA_MODE_IGNORE. 
+	pixelFormat =  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
+	hr = m_pD2DFactory->CreateDCRenderTarget(
+		&renderTargetProperties,
+		&m_pDCRenderTarget
+		);/**/
+	if (SUCCEEDED(hr))
 	{
-		hr = m_pRenderTarget->CreateSolidColorBrush(
-			ColorF(ColorF::OrangeRed),
-			&m_pSolidBrush
-			);
+		HDC windowDC = GetWindowDC(m_hWnd);
+		GetWindowRect(m_hWnd, &rc);
+		m_pDCRenderTarget->BindDC(windowDC, &rc);
 	}
-
-	ID2D1GradientStopCollection* pGStop = 0;
-	D2D1_GRADIENT_STOP stops[2];
-
-	stops[0].color = ColorF(ColorF::White);
-	stops[1].color = ColorF(ColorF::Blue);
-	stops[0].position = 0.0f;
-	stops[1].position = 1.0f;
-
-	if(SUCCEEDED(hr))
-	{
-		hr = m_pRenderTarget->CreateGradientStopCollection(
-			stops,
-			sizeof(stops) / sizeof(D2D1_GRADIENT_STOP),
-			D2D1_GAMMA_2_2,
-			D2D1_EXTEND_MODE_CLAMP,
-			&pGStop
-			);
-	}
-
-	//
-	// 创建线性渐变画刷.
-	//
-	if(SUCCEEDED(hr))
-	{
-		hr = m_pRenderTarget->CreateLinearGradientBrush(
-			LinearGradientBrushProperties(
-			Point2F(0.0f, 0.0f),
-			Point2F(1.0f, 1.0f)
-			),
-			pGStop,
-			&m_pLGBrush
-			);
-
-		SafeRelease(pGStop);
-	}
-
-	//
-	// 创建放射渐变画刷.
-	//
-	if(SUCCEEDED(hr))
-	{
-		stops[0].color = ColorF(ColorF::Red);
-		stops[1].color = ColorF(ColorF::Yellow);
-
-		hr = m_pRenderTarget->CreateGradientStopCollection(
-			stops,
-			sizeof(stops) / sizeof(D2D1_GRADIENT_STOP),
-			D2D1_GAMMA_2_2,
-			D2D1_EXTEND_MODE_CLAMP,
-			&pGStop
-			);
-
-		if(FAILED(hr))
-		{
-			return FALSE;
-		}
-
-		hr = m_pRenderTarget->CreateRadialGradientBrush(
-			RadialGradientBrushProperties(
-			Point2F(10.0f, 10.0f),		//绘制中心.
-			Point2F(0.0f, 0.0f),		//放射点距绘制中心的偏移.
-			20.0f,						//x半径.
-			20.0f						//y半径.
-			),
-			pGStop,
-			&m_pRGBrush
-			);
-
-		SafeRelease(pGStop);
-	}
-
 	return SUCCEEDED(hr);
 }
 
 
-LRESULT CALLBACK FrameWnd::WndProc(
-									  HWND   hWnd,
-									  UINT   uMessage,
-									  WPARAM wParam,
-									  LPARAM lParam
-									  )
+LRESULT CALLBACK FrameWnd::WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam)
 {
 	LRESULT result = 0;
 
@@ -232,18 +142,18 @@ LRESULT CALLBACK FrameWnd::WndProc(
 		LPCREATESTRUCT lpCreateStruct = (LPCREATESTRUCT)lParam;
 		FrameWnd* pDemoApplication = (FrameWnd*)lpCreateStruct->lpCreateParams;
 
-		//
 		// 把this指针保存到用户自定义数据区域.
-		//
 		::SetWindowLongPtr(hWnd, GWLP_USERDATA, PtrToLong(pDemoApplication));
 
+		// 设置分层属性  
+		SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);  
+		// 设置透明色   
+		SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 0, LWA_COLORKEY);   
 		result = 1;
 	}
 	else
 	{
-		//
 		// 从客户自定义数据区中取出this指针.
-		//
 		FrameWnd* pDemoApp = reinterpret_cast<FrameWnd*>(
 			static_cast<LONG_PTR>(::GetWindowLongPtr(
 			hWnd,
@@ -257,11 +167,15 @@ LRESULT CALLBACK FrameWnd::WndProc(
 		{
 			switch(uMessage)
 			{
+			case WM_ERASEBKGND: //在窗口背景中直接贴图  
+				{  
+					return TRUE;  
+				}  
 			case WM_SIZE:
-				pDemoApp->OnResize(
+				/*pDemoApp->OnResize(
 					LOWORD(lParam),
 					HIWORD(lParam)
-					);
+					);*/
 				bMsgHandled = TRUE;
 				break;
 
@@ -275,23 +189,20 @@ LRESULT CALLBACK FrameWnd::WndProc(
 				break;
 
 			case WM_PAINT:
-				pDemoApp->OnRender();
+				//pDemoApp->OnRender();
 				ValidateRect(
 					hWnd,
 					NULL
 					);		//客户区重绘完成后设为有效.
 				bMsgHandled = TRUE;
 				break;
-
-			case WM_ERASEBKGND:
-				return FALSE;
-
 			case WM_DESTROY:
 				PostQuitMessage(0);
 				result = 1;
 				bMsgHandled = TRUE;
 				break;
-
+			case WM_CTLCOLORDLG:
+				
 			default:
 				break;
 			}
@@ -319,107 +230,11 @@ void FrameWnd::OnResize(UINT uWidth, UINT uHeight)
 	}
 }
 
-HRESULT LoadBitmapFromFile(
-						   ID2D1RenderTarget *pRenderTarget,
-						   IWICImagingFactory *pIWICFactory,
-						   PCWSTR uri,
-						   UINT destinationWidth,
-						   UINT destinationHeight,
-						   ID2D1Bitmap **ppBitmap
-						   )
-{
-	HRESULT hr = S_OK;
-
-	IWICBitmapDecoder *pDecoder = NULL;
-	IWICBitmapFrameDecode *pSource = NULL;
-	IWICStream *pStream = NULL;
-	IWICFormatConverter *pConverter = NULL;
-	IWICBitmapScaler *pScaler = NULL;
-
-	hr = pIWICFactory->CreateDecoderFromFilename(
-		uri,
-		NULL,
-		GENERIC_READ,
-		WICDecodeMetadataCacheOnLoad,
-		&pDecoder
-		);
-	if (SUCCEEDED(hr))
-	{
-
-		// Create the initial frame.
-		hr = pDecoder->GetFrame(0, &pSource);
-	}
-	if (SUCCEEDED(hr))
-	{
-		hr = pIWICFactory->CreateFormatConverter(&pConverter);
-	}
-	// If a new width or height was specified, create an
-	// IWICBitmapScaler and use it to resize the image.
-	if (destinationWidth != 0 || destinationHeight != 0)
-	{
-		UINT originalWidth, originalHeight;
-		hr = pSource->GetSize(&originalWidth, &originalHeight);
-		if (SUCCEEDED(hr))
-		{
-			if (destinationWidth == 0)
-			{
-				FLOAT scalar = static_cast<FLOAT>(destinationHeight) / static_cast<FLOAT>(originalHeight);
-				destinationWidth = static_cast<UINT>(scalar * static_cast<FLOAT>(originalWidth));
-			}
-			else if (destinationHeight == 0)
-			{
-				FLOAT scalar = static_cast<FLOAT>(destinationWidth) / static_cast<FLOAT>(originalWidth);
-				destinationHeight = static_cast<UINT>(scalar * static_cast<FLOAT>(originalHeight));
-			}
-
-			hr = pIWICFactory->CreateBitmapScaler(&pScaler);
-			if (SUCCEEDED(hr))
-			{
-				hr = pScaler->Initialize(
-					pSource,
-					destinationWidth,
-					destinationHeight,
-					WICBitmapInterpolationModeCubic
-					);
-			}
-			if (SUCCEEDED(hr))
-			{
-				hr = pConverter->Initialize(
-					pScaler,
-					GUID_WICPixelFormat32bppPBGRA,
-					WICBitmapDitherTypeNone,
-					NULL,
-					0.f,
-					WICBitmapPaletteTypeMedianCut
-					);
-			}
-		}
-	}
-	if (SUCCEEDED(hr))
-	{
-		// Create a Direct2D bitmap from the WIC bitmap.
-		hr = pRenderTarget->CreateBitmapFromWicBitmap(
-			pConverter,
-			NULL,
-			ppBitmap
-			);
-	}
-	SafeRelease(pDecoder);
-	SafeRelease(pSource);
-	SafeRelease(pStream);
-	SafeRelease(pConverter);
-	SafeRelease(pScaler);
-
-	return hr;
-}
-
 ResManager resManager(L"I:\\UIEngine\\docs");
 RPicture* pic = NULL;
 void FrameWnd::OnRender()
 {
-	//
 	// 检查设备是否丢失,如果丢失则需要重新创建.
-	//
 	if(!m_pRenderTarget)
 	{
 		return;
@@ -427,39 +242,18 @@ void FrameWnd::OnRender()
 
 	HRESULT hr = NULL;
 
-	//
 	//初始化绘制信息.
-	//
-	m_pRenderTarget->BeginDraw();
-
+	/*m_pRenderTarget->BeginDraw();
 	m_pRenderTarget->SetTransform(Matrix3x2F::Identity());
-	m_pRenderTarget->Clear(ColorF(ColorF::White));
+	m_pRenderTarget->Clear(ColorF(ColorF::Black));*/
+
+	m_pDCRenderTarget->BeginDraw();
+	m_pDCRenderTarget->SetTransform(Matrix3x2F::Identity());
+	m_pDCRenderTarget->Clear(ColorF(ColorF::Black));
 
 	D2D1_SIZE_F size = m_pRenderTarget->GetSize();
 	int iWidth  = static_cast<int>(size.width);
 	int iHeight = static_cast<int>(size.height);
-
-	//
-	// 开始绘制.
-	//
-	D2D1_POINT_2F StartPoint = Point2F(10.0f, 10.0f);
-	D2D1_POINT_2F EndPoint   = Point2F(100.0f, 100.0f);
-
-	m_pSolidBrush->SetColor(ColorF(ColorF::Red));
-	m_pRenderTarget->DrawLine(		//纯色画刷绘制一条线.
-		StartPoint,
-		EndPoint,
-		m_pSolidBrush,
-		8.0f
-		);
-
-	D2D1_RECT_F rc = RectF(130.0f, 10.0f, 230.0f, 110.0f);
-	m_pSolidBrush->SetColor(ColorF(ColorF::Pink));
-	m_pRenderTarget->DrawRectangle(
-		&rc,
-		m_pSolidBrush,
-		6.0f
-		);
 
 	
 	if (NULL == pic)
@@ -470,21 +264,39 @@ void FrameWnd::OnRender()
 			pic = new RTexture(L"I:\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
 			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeV.xBtnBkg_Hover.png", "texture.ThreeV.xBtnBkg_Hover");
 			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeH.listctrl_scroll_bkg.png", "texture.ThreeH.listctrl_scroll_bkg");
-			pic->WritePngFile(L"I:\\UIEngine\\docs\\AAABBB.png");	
+			//pic->WritePngFile(L"I:\\UIEngine\\docs\\AAABBB.png");	
 		}
 	}
-	pic->Draw(m_pRenderTarget, 120, 210, 340, 440);
+	//pic->Draw(m_pRenderTarget, 120, 210, 340, 440);
+	pic->Draw(m_pDCRenderTarget, 120, 210, 340, 440);
 
-	//E:\\code\\ComBase\\trunk\\UIEngine\\docs\\image.pngImage.png
-	//LoadBitmapFromFile(p_pRenderTarget,p_pImageFactory,L"car.jpg",0,0,&p_pBitmap);
-	//
 	//结束绘制.
-	//
-	hr = m_pRenderTarget->EndDraw();
+	//hr = m_pRenderTarget->EndDraw();
+	
 
-	//
+	POINT sourcePosition = {};
+	POINT windowPosition = {};
+	SIZE  dcSize = { 480, 480 };
+
+	BLENDFUNCTION blend = {};
+	blend.SourceConstantAlpha = 0;
+	blend.AlphaFormat = AC_SRC_ALPHA;
+
+	UPDATELAYEREDWINDOWINFO info = {};
+	info.cbSize = sizeof(UPDATELAYEREDWINDOWINFO);
+	info.pptSrc = &sourcePosition;
+	info.pptDst = &windowPosition;
+	info.psize = &dcSize;
+	info.pblend = &blend;
+	info.dwFlags = ULW_ALPHA;
+	info.hdcSrc = GetWindowDC(m_hWnd);
+	
+	UpdateLayeredWindowIndirect(m_hWnd, &info);
+
+	hr = m_pDCRenderTarget->EndDraw();
+
+	//RenderTargetDC dc(m_interopTarget);
 	// 检查设备,如果丢失,则丢弃以备下次渲染时重新创建.
-	//
 	if(hr == D2DERR_RECREATE_TARGET)
 	{
 		SafeRelease(m_pD2DFactory);

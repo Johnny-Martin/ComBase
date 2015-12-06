@@ -16,6 +16,10 @@ class FrameWnd
 {
 public:
 	FrameWnd(){};
+	~FrameWnd(){
+		SafeRelease(m_pD2DFactory);
+		SafeRelease(m_pRenderTarget);
+	};
 	bool	Initialize(HINSTANCE hInstance);
 	//
 	// 消息循环.
@@ -33,8 +37,6 @@ public:
 protected:
 	BOOL CreateDeviceIndependentResources();		//创建设备无关资源.
 	BOOL CreateDeviceDependentResources();			//创建设备相关资源.
-	void DiscardDeviceDependentResources();			//丢弃设备资源.
-	void DiscardDeviceIndependentResources();		//丢弃设备无关资源.
 
 	void	OnRender();
 	void	OnResize(UINT uWidth, UINT uHeight);
@@ -46,12 +48,11 @@ protected:
 		);
 private:
 	HWND						m_hWnd;				//窗口句柄.
+	HDC 						m_hWndDC;				//窗口句柄.
 	ID2D1Factory*				m_pD2DFactory;		//D2D对象工厂.
 	ID2D1HwndRenderTarget*		m_pRenderTarget;	//绘制目标区域.
-
-	ID2D1SolidColorBrush*		m_pSolidBrush;		//纯色画刷.
-	ID2D1LinearGradientBrush*	m_pLGBrush;			//线性渐变画刷.
-	ID2D1RadialGradientBrush*	m_pRGBrush;			//放射状渐变画刷.
+	ID2D1DCRenderTarget*		m_pDCRenderTarget;	//绘制目标区域.
+	//ID2D1GdiInteropRenderTarget m_pGdiRenderTarget;
 };
 
 class ModalWnd:public FrameWnd
