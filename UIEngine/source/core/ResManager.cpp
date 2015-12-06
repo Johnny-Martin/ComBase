@@ -208,7 +208,7 @@ RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
 }
-RESERROR RImage::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+RESERROR RImage::Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	return RES_SUCCESS;
 }
@@ -336,7 +336,7 @@ void PrintPngPixelData(png_byte* pngData, UINT pixelWidth, UINT pixelHeight, UIN
 	outFile<<endl;
 	outFile.close();
 }
-RESERROR RTexture::_CreateD2D1Bitmap_ThreeV(ID2D1HwndRenderTarget* pRenderTarget)
+RESERROR RTexture::_CreateD2D1Bitmap_ThreeV(ID2D1RenderTarget* pRenderTarget)
 {
 	int lastBlockXEnd = -1;
 	m_arrVerticalLinePos.push_back(m_pngWidth);
@@ -398,7 +398,7 @@ RESERROR RTexture::_CreateD2D1Bitmap_ThreeV(ID2D1HwndRenderTarget* pRenderTarget
 	m_arrVerticalLinePos.pop_back();
 	return RES_SUCCESS;
 }
-RESERROR RTexture::_CreateD2D1Bitmap_ThreeH(ID2D1HwndRenderTarget* pRenderTarget)
+RESERROR RTexture::_CreateD2D1Bitmap_ThreeH(ID2D1RenderTarget* pRenderTarget)
 {
 	int lastBlockYEnd = -1;
 	m_arrHorizontalLinePos.push_back(m_pngHeight);
@@ -461,7 +461,7 @@ RESERROR RTexture::_CreateD2D1Bitmap_ThreeH(ID2D1HwndRenderTarget* pRenderTarget
 	return RES_SUCCESS;
 }
 
-RESERROR RTexture::_CreateD2D1Bitmap_Nine(ID2D1HwndRenderTarget* pRenderTarget)
+RESERROR RTexture::_CreateD2D1Bitmap_Nine(ID2D1RenderTarget* pRenderTarget)
 {
 	int lastBlockXEnd = -1;
 	int lastBlockYEnd = -1;
@@ -533,7 +533,7 @@ RESERROR RTexture::_CreateD2D1Bitmap_Nine(ID2D1HwndRenderTarget* pRenderTarget)
 
 	return RES_SUCCESS;
 }
-RESERROR RTexture::CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget)
+RESERROR RTexture::CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget)
 {
 	if (THREE_V == m_textureType)
 	{
@@ -550,7 +550,7 @@ RESERROR RTexture::CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget)
 		
 	return RES_SUCCESS;
 }
-RESERROR RTexture::_Draw_Nine(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+RESERROR RTexture::_Draw_Nine(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	D2D1_RECT_F dstRect = D2D1::RectF((FLOAT)left ,(FLOAT)top, (FLOAT)right, (FLOAT)bottom);
 	ID2D1Bitmap *pBitmap = NULL;
@@ -606,7 +606,7 @@ RESERROR RTexture::_Draw_Nine(ID2D1HwndRenderTarget* pRenderTarget, UINT left, U
 
 	return RES_SUCCESS;
 }
-RESERROR RTexture::_Draw_ThreeV(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+RESERROR RTexture::_Draw_ThreeV(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	if (bottom - top > m_pngHeight)
 	{
@@ -630,7 +630,7 @@ RESERROR RTexture::_Draw_ThreeV(ID2D1HwndRenderTarget* pRenderTarget, UINT left,
 	pRenderTarget->DrawBitmap(pBitmap, dstRect);
 	return RES_SUCCESS;
 }
-RESERROR RTexture::_Draw_ThreeH(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+RESERROR RTexture::_Draw_ThreeH(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	if (right - left > m_pngWidth)
 		right = left + m_pngWidth;
@@ -654,7 +654,7 @@ RESERROR RTexture::_Draw_ThreeH(ID2D1HwndRenderTarget* pRenderTarget, UINT left,
 
 	return RES_SUCCESS;
 }
-RESERROR RTexture::Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+RESERROR RTexture::Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
 	if (m_arrD2D1Bitmap.size() == 0)
 	{

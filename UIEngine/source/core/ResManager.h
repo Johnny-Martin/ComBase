@@ -75,7 +75,7 @@ public:
 	{
 		return m_pngInfoPtr;
 	}
-	virtual RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
+	virtual RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
 protected:
 	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
 	RESERROR ReadPngFile(LPCWSTR wszFilePath);
@@ -114,7 +114,7 @@ public:
 		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 private:
 	
@@ -164,7 +164,7 @@ public:
 		}
 	}
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 	RESERROR DetectVerticalLine();
 	RESERROR DetectHorizontalLine();
@@ -197,14 +197,14 @@ private:
 		m_pBottomRightBitmap = NULL;
 	}
 	RESERROR ProcessTexture();
-	RESERROR CreateD2D1Bitmap(ID2D1HwndRenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_Nine(ID2D1HwndRenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_ThreeV(ID2D1HwndRenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_ThreeH(ID2D1HwndRenderTarget* pRenderTarget);
+	RESERROR CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_Nine(ID2D1RenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_ThreeV(ID2D1RenderTarget* pRenderTarget);
+	RESERROR _CreateD2D1Bitmap_ThreeH(ID2D1RenderTarget* pRenderTarget);
 
-	RESERROR _Draw_Nine(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
-	RESERROR _Draw_ThreeV(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
-	RESERROR _Draw_ThreeH(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR _Draw_Nine(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR _Draw_ThreeV(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR _Draw_ThreeH(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 	//vertical dividing line's position in horizontal direction
 	vector<unsigned int> m_arrVerticalLinePos;
 	//horizontal dividing line's position in vertical direction
@@ -280,7 +280,7 @@ public:
 	}
 	
 	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1HwndRenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom){ return RES_SUCCESS;};//RPicList do not need a draw function
+	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom){ return RES_SUCCESS;};//RPicList do not need a draw function
 protected:
 	RESERROR DetectVerticalLine();
 	RESERROR CreatePicFromMem();
