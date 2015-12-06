@@ -51,6 +51,12 @@ private:
 	HDC 						m_hWndDC;				//窗口句柄.
 	ID2D1Factory*				m_pD2DFactory;		//D2D对象工厂.
 	ID2D1HwndRenderTarget*		m_pRenderTarget;	//绘制目标区域.
+	
+	//use ID2D1DCRenderTarget when drawing on the window instead of 
+	//ID2D1HwndRenderTarget. if use the ID2D1HwndRenderTarget, the
+	//background of the window will not be transparent even though
+	//set the layered-style window and set colorkey with function
+	//SetLayeredWindowAttributes
 	ID2D1DCRenderTarget*		m_pDCRenderTarget;	//绘制目标区域.
 	//ID2D1GdiInteropRenderTarget m_pGdiRenderTarget;
 };
