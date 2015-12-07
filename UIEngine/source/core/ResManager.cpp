@@ -208,8 +208,27 @@ RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
 }
+RESERROR RImage::CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget)
+{
+	D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	D2D1_BITMAP_PROPERTIES properties = {pixelFormat, 96.0, 96.0};
+	ID2D1Bitmap *pBitmap = NULL;
+	HRESULT hr = pRenderTarget->CreateBitmap(D2D1::SizeU(m_pngWidth, m_pngHeight), (void *)m_rowPointers[0], m_pngWidth*m_pixelDepth/8 , properties, &pBitmap);
+	if (SUCCEEDED(hr))
+	{
+		m_arrD2D1Bitmap.push_back(pBitmap);
+		return RES_SUCCESS;
+	}
+	return RES_ERROR_CREATE_D2D1BITMAP_FAILED;
+}
 RESERROR RImage::Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
 {
+	if (m_arrD2D1Bitmap.size() == 0)
+	{
+		CreateD2D1Bitmap(pRenderTarget);
+	}
+	D2D1_RECT_F dstRect = D2D1::RectF((FLOAT)left ,(FLOAT)top, (FLOAT)right, (FLOAT)bottom);
+	pRenderTarget->DrawBitmap(m_arrD2D1Bitmap[0], dstRect);
 	return RES_SUCCESS;
 }
 

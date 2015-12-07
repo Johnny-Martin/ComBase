@@ -12,6 +12,7 @@ enum RESERROR{
 	RES_ERROR_ILLEGAL_FILE_TYPE,
 	RES_ERROR_PARSE_FILE_FALIED,
 	RES_ERROR_ILLEGAL_PNG_FILE,
+	RES_ERROR_CREATE_D2D1BITMAP_FAILED,
 	RES_ERROR_UNKNOWN,
 	RES_ERROR_COUNT
 };
@@ -117,7 +118,8 @@ public:
 	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 private:
-	
+	RESERROR CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
+	vector<ID2D1Bitmap*> m_arrD2D1Bitmap;
 };
 
 //a texture object's resource ID *must* begin with "texture"
@@ -183,18 +185,7 @@ private:
 	}
 	void InitMemberVariable()
 	{
-		m_pExpandedPixelData = NULL;
-		m_expandedTextureWidth = 0;
-		m_expandedTextureHeight = 0;
-		m_pTopLeftBitmap = NULL;
-		m_pTopMiddleBitmap = NULL;
-		m_pTopRightBitmap = NULL;
-		m_pMiddleLeftBitmap = NULL;
-		m_pMiddleMiddleBitmap = NULL;
-		m_pMiddleRightBitmap = NULL;
-		m_pBottomLeftBitmap = NULL;
-		m_pBottomMiddleBitmap = NULL;
-		m_pBottomRightBitmap = NULL;
+
 	}
 	RESERROR ProcessTexture();
 	RESERROR CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
@@ -212,20 +203,6 @@ private:
 	vector<ID2D1Bitmap*> m_arrD2D1Bitmap;
 	const COLORREF m_purpleLineColor;
 	TEXTURE_TYPE m_textureType;
-	png_byte* m_pExpandedPixelData;
-	UINT m_expandedTextureWidth;
-	UINT m_expandedTextureHeight;
-	ID2D1Bitmap* m_pTopLeftBitmap;
-	ID2D1Bitmap* m_pTopMiddleBitmap;
-	ID2D1Bitmap* m_pTopRightBitmap;
-	ID2D1Bitmap* m_pMiddleLeftBitmap;
-	ID2D1Bitmap* m_pMiddleMiddleBitmap;
-	ID2D1Bitmap* m_pMiddleRightBitmap;
-	ID2D1Bitmap* m_pBottomLeftBitmap;
-	ID2D1Bitmap* m_pBottomMiddleBitmap;
-	ID2D1Bitmap* m_pBottomRightBitmap;
-
-
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
