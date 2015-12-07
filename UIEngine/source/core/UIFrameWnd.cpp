@@ -128,6 +128,14 @@ BOOL FrameWnd::CreateDeviceDependentResources()
 		HDC windowDC = GetWindowDC(m_hWnd);
 		GetWindowRect(m_hWnd, &rc);
 		m_pDCRenderTarget->BindDC(windowDC, &rc);
+
+		m_hWndDC = windowDC;
+
+
+		hr = m_pDCRenderTarget->CreateSolidColorBrush(
+				ColorF(ColorF::OrangeRed),
+				&m_pSolidBrush
+				);
 	}
 	return SUCCEEDED(hr);
 }
@@ -255,15 +263,19 @@ void FrameWnd::OnRender()
 	int iWidth  = static_cast<int>(size.width);
 	int iHeight = static_cast<int>(size.height);
 
-	
+	D2D1_RECT_F rc = RectF(130.0f, 10.0f, 230.0f, 110.0f);
+	m_pSolidBrush->SetColor(ColorF(0.0f,0.7f,0.1f,0.5f));
+	m_pDCRenderTarget->DrawRectangle(&rc, m_pSolidBrush,6.0f);
+
 	if (NULL == pic)
 	{
-		//RESERROR resErr = resManager.GetResPicHandle("texturelist.Nine.btnbkg.4", &pic);
-		//if (RES_SUCCESS == resErr)/**/
+		RESERROR resErr = resManager.GetResPicHandle("texturelist.Nine.btnbkg.4", &pic);
+		if (RES_SUCCESS == resErr)/**/
 		{
-			pic = new RTexture(L"I:\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
+			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.NineInOne.wndbkg_shadow.png", "texture.NineInOne.wndbkg_shadow");
 			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeV.xBtnBkg_Hover.png", "texture.ThreeV.xBtnBkg_Hover");
 			//pic = new RTexture(L"I:\\UIEngine\\docs\\texture.ThreeH.listctrl_scroll_bkg.png", "texture.ThreeH.listctrl_scroll_bkg");
+			//pic = new RImage(L"I:\\UIEngine\\docs\\image.settingIcon.png", "image.settingIcon");
 			//pic->WritePngFile(L"I:\\UIEngine\\docs\\AAABBB.png");	
 		}
 	}
