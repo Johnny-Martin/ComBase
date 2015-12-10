@@ -5,8 +5,45 @@
 
 #pragma comment(lib, "Windowscodecs.lib")
 
-bool FrameWnd::Initialize(HINSTANCE hInstance)
+FrameWnd::FrameWnd():m_hWnd(NULL)
+,m_hWndDC(NULL)
+,m_pD2DFactory(NULL)
+,m_pRenderTarget(NULL)
+,m_pDCRenderTarget(NULL)
+{}
+
+FrameWnd::~FrameWnd()
 {
+	SafeRelease(m_pD2DFactory);
+	SafeRelease(m_pRenderTarget);
+	SafeRelease(m_pDCRenderTarget);
+	SafeRelease(m_pSolidBrush);
+};
+
+void FrameWnd::RunMessageLoop()
+{
+	MSG message;
+	while(GetMessage(&message, NULL, 0, 0))
+	{
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+	}
+}
+HWND FrameWnd::GetWndHandle()
+{
+	return m_hWnd;
+}
+void FrameWnd::DiscardDeviceResources()
+{
+	SafeRelease(m_pDCRenderTarget);
+	SafeRelease(m_pSolidBrush);
+}
+HRESULT FrameWnd::Initialize(HINSTANCE hInstance)
+{
+	HRESULT hr = CreateDeviceIndependentResources();
+	if (!SUCCEEDED(hr))
+		return hr;
+
 	WNDCLASSEX wcex    = { sizeof(WNDCLASSEX) };
 	wcex.style         = CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc   = WndProc;
@@ -42,131 +79,88 @@ bool FrameWnd::Initialize(HINSTANCE hInstance)
 		      // CREATESTRUCT structure is pointed by the lParam param of the WM_CREATE message.
 		);
 
-	// Create Dirct2D resource
-	if(!CreateDeviceIndependentResources() || !CreateDeviceDependentResources())
-	{
-		WARNING_HWND_MSG(m_hWnd, _T("Create Dirct2D resource failed!"));
-		return FALSE;
-	}
-
-
-	if(m_hWnd)
+	hr = m_hWnd ? S_OK : E_FAIL;
+	if (SUCCEEDED(hr))
 	{
 		ShowWindow(m_hWnd, SW_SHOWNORMAL);
 		UpdateWindow(m_hWnd);
-
-/*		RECT wndRect;  
-		::GetWindowRect(m_hWnd,&wndRect);  
-		SIZE wndSize = {wndRect.right-wndRect.left,wndRect.bottom-wndRect.top};  
-		HDC hdc = ::GetDC(m_hWnd);  
-		m_hWndDC = ::CreateCompatibleDC(hdc);  
-		
-		HDC screenDC = GetDC(NULL);  
-		POINT ptSrc = {0,0};  
-
-		BLENDFUNCTION blendFunction;  
-		blendFunction.AlphaFormat = AC_SRC_ALPHA;  
-		blendFunction.BlendFlags = 0;  
-		blendFunction.BlendOp = AC_SRC_OVER;  
-		blendFunction.SourceConstantAlpha = 255;  
-		UpdateLayeredWindow(m_hWnd,screenDC,&ptSrc,&wndSize,m_hWndDC,&ptSrc,0,&blendFunction,2);*/  
-
-		//::DeleteDC(memDC);  
-	}else
-	{
-		return false;
 	}
 
-	//Render right now
-	OnRender();	
-
-	return TRUE;
+	return hr;
 }
 
-BOOL FrameWnd::CreateDeviceIndependentResources()
+HRESULT FrameWnd::CreateDeviceIndependentResources()
 {
-	HRESULT hr = NULL;
-	hr = D2D1CreateFactory(
-		D2D1_FACTORY_TYPE_SINGLE_THREADED,
-		&m_pD2DFactory
-		);
-	
-	return SUCCEEDED(hr);
+	return D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
 }
 
 HDC MemDC;
 HBITMAP DIBSectionBitmap;
 HBITMAP OldBmp;
-BOOL FrameWnd::CreateDeviceDependentResources()
+HRESULT FrameWnd::CreateDeviceResources()
 {
-	RECT rc;
-	::GetClientRect(m_hWnd, &rc);
-
-	D2D1_SIZE_U size = SizeU(
-		rc.right - rc.left,
-		rc.bottom - rc.top
-		);
-
-	//DXGI_FORMAT_R8G8B8A8_UNORM
-	// Create Dirct2D render target.
-	//DXGI_FORMAT_B8G8R8A8_UNORM
-	D2D1_PIXEL_FORMAT pixelFormat =  PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
-	D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
-	HRESULT hr = NULL;
-	hr = m_pD2DFactory->CreateHwndRenderTarget(
-		renderTargetProperties,
-		HwndRenderTargetProperties(m_hWnd, size),
-		&m_pRenderTarget
-		);
-
-	//initialize the device context
-	RECT r = {0};
-	GetWindowRect(m_hWnd,&r);
-	HDC scrDC = GetDC(0);
-	MemDC = CreateCompatibleDC(scrDC);
-	ReleaseDC(0,scrDC);
-	if(!MemDC)
+	HRESULT hr = S_OK;
+	if (!m_pDCRenderTarget)
 	{
-		// FailInit();
+		// Create Dirct2D render target.
+		/*D2D1_PIXEL_FORMAT pixelFormat =  PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+		D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
+		HRESULT hr = NULL;
+		hr = m_pD2DFactory->CreateHwndRenderTarget(
+			renderTargetProperties,
+			HwndRenderTargetProperties(m_hWnd, size),
+			&m_pRenderTarget
+			);*/
+
+		//ID2D1DCRenderTarget do not support the DXGI_FORMAT_R8G8B8A8_UNORM pixel format
+		D2D1_PIXEL_FORMAT pixelFormat =  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+		D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
+		
+		hr = m_pD2DFactory->CreateDCRenderTarget(&renderTargetProperties, &m_pDCRenderTarget);
+		if (SUCCEEDED(hr))
+		{
+			hr = m_pDCRenderTarget->CreateSolidColorBrush(ColorF(ColorF::OrangeRed), &m_pSolidBrush);
+		}
 	}
-	BITMAPINFO bmi = {0};
-	bmi.bmiHeader.biBitCount = 32;
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biWidth = r.right-r.left;
-	bmi.bmiHeader.biHeight = r.bottom-r.top;
-	bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
-	DIBSectionBitmap = CreateDIBSection(MemDC,&bmi,DIB_RGB_COLORS,0,0,0);
-	if(!DIBSectionBitmap)
-		return 0;
-	OldBmp = (HBITMAP)SelectObject(MemDC,DIBSectionBitmap);
-	// Now create the HWND D2D1 RenderTarget.
+	//RECT rc;
+	//::GetClientRect(m_hWnd, &rc);
+
+	//D2D1_SIZE_U size = SizeU(
+	//	rc.right - rc.left,
+	//	rc.bottom - rc.top
+	//	);
+
+	//
+
+	////initialize the device context
+	//RECT r = {0};
+	//GetWindowRect(m_hWnd,&r);
+	//HDC scrDC = GetDC(0);
+	//MemDC = CreateCompatibleDC(scrDC);
+	//ReleaseDC(0,scrDC);
+	//if(!MemDC)
+	//{
+	//	// FailInit();
+	//}
+	//BITMAPINFO bmi = {0};
+	//bmi.bmiHeader.biBitCount = 32;
+	//bmi.bmiHeader.biCompression = BI_RGB;
+	//bmi.bmiHeader.biPlanes = 1;
+	//bmi.bmiHeader.biWidth = r.right-r.left;
+	//bmi.bmiHeader.biHeight = r.bottom-r.top;
+	//bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+	//DIBSectionBitmap = CreateDIBSection(MemDC,&bmi,DIB_RGB_COLORS,0,0,0);
+	//if(!DIBSectionBitmap)
+	//	return 0;
+	//OldBmp = (HBITMAP)SelectObject(MemDC,DIBSectionBitmap);
+	//// Now create the HWND D2D1 RenderTarget.
 
 
 	//To enable the device context (DC) render target to work with GDI, set the DXGI format 
 	//to DXGI_FORMAT_B8G8R8A8_UNORM and the alpha mode to D2D1_ALPHA_MODE_PREMULTIPLIED or 
 	//D2D1_ALPHA_MODE_IGNORE. 
-	pixelFormat =  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
-	renderTargetProperties = RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,pixelFormat);
-	hr = m_pD2DFactory->CreateDCRenderTarget(
-		&renderTargetProperties,
-		&m_pDCRenderTarget
-		);/**/
-	if (SUCCEEDED(hr))
-	{
-		HDC windowDC = GetWindowDC(m_hWnd);
-		GetWindowRect(m_hWnd, &rc);
-		m_pDCRenderTarget->BindDC(windowDC, &rc);
-
-		m_hWndDC = windowDC;
-
-
-		hr = m_pDCRenderTarget->CreateSolidColorBrush(
-				ColorF(ColorF::OrangeRed),
-				&m_pSolidBrush
-				);
-	}
-	return SUCCEEDED(hr);
+	
+	return hr;
 }
 
 // FrameWnd::WndProc is a static member function, so there's no 'this' pointer in the 
@@ -213,15 +207,19 @@ LRESULT CALLBACK FrameWnd::WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPAR
 				bMsgHandled = TRUE;
 				break;
 
-			case WM_DISPLAYCHANGE:
-				//add a rectangle to the window's update region,so that 
-				//the window's client area can be redrawn
-				InvalidateRect(hWnd, NULL, FALSE);
-				bMsgHandled = TRUE;
-				break;
+			//case WM_DISPLAYCHANGE:
+			//	//add a rectangle to the window's update region,so that 
+			//	//the window's client area can be redrawn
+			//	InvalidateRect(hWnd, NULL, FALSE);
+			//	bMsgHandled = TRUE;
+			//	break;
 
 			case WM_PAINT:
-				pDemoApp->OnRender();
+			case WM_DISPLAYCHANGE:
+				PAINTSTRUCT ps;
+				BeginPaint(pDemoApp->GetWndHandle(), &ps);
+				pDemoApp->OnRender(ps);
+				EndPaint(pDemoApp->GetWndHandle(), &ps);
 				//remove the rectangle from client area after being drawn
 				ValidateRect(hWnd, NULL);
 				bMsgHandled = TRUE;
@@ -255,24 +253,24 @@ void FrameWnd::OnResize(UINT uWidth, UINT uHeight)
 
 ResManager resManager(L"I:\\UIEngine\\docs");
 RPicture* pic = NULL;
-void FrameWnd::OnRender()
+void FrameWnd::OnRender(const PAINTSTRUCT &ps)
 {
-	if(!m_pRenderTarget)
+	HRESULT hr = CreateDeviceResources();
+	if (!SUCCEEDED(hr))
 	{
+		WARNING_HWND_MSG(NULL, _T("CreateDeviceResources failed!"));
 		return;
 	}
-
-	HRESULT hr = NULL;
-
+	
 	//Initialize the render target.
+	RECT dcRect;
+	// Get the dimensions of the client drawing area.
+	GetClientRect(m_hWnd, &dcRect);
+	m_pDCRenderTarget->BindDC(ps.hdc, &dcRect);
+	
 	m_pDCRenderTarget->BeginDraw();
 	m_pDCRenderTarget->SetTransform(Matrix3x2F::Identity());
 	m_pDCRenderTarget->Clear(ColorF(ColorF::Black));
-
-	RECT dcRect;
-	HDC windowDC = GetWindowDC(m_hWnd);
-	GetWindowRect(m_hWnd, &dcRect);
-	m_pDCRenderTarget->BindDC(windowDC, &dcRect);
 
 	D2D1_RECT_F rc = RectF(130.0f, 10.0f, 230.0f, 110.0f);
 	m_pSolidBrush->SetColor(ColorF(0.0f,0.7f,0.1f,0.5f));
@@ -297,9 +295,9 @@ void FrameWnd::OnRender()
 	//POINT windowPosition = {};
 	//SIZE  dcSize = { 480, 480 };
 
-	BLENDFUNCTION blend = {};
-	blend.SourceConstantAlpha = 0;
-	blend.AlphaFormat = AC_SRC_ALPHA;
+	//BLENDFUNCTION blend = {};
+	//blend.SourceConstantAlpha = 0;
+	//blend.AlphaFormat = AC_SRC_ALPHA;
 
 	//UPDATELAYEREDWINDOWINFO info = {};
 	//info.cbSize = sizeof(UPDATELAYEREDWINDOWINFO);
@@ -322,19 +320,19 @@ void FrameWnd::OnRender()
 	//Rendering finish.
 	hr = m_pDCRenderTarget->EndDraw();
 
-	RECT rcWin = {0};
-	GetWindowRect(m_hWnd,&rcWin);
-	POINT ptw = {rcWin.left,rcWin.top};
-	SIZE pts = {rcWin.right-rcWin.left,rcWin.bottom-rcWin.top};
-	POINT ptsrc = {0};
-	HDC ScreenDC = GetDC(0);
-	UpdateLayeredWindow(m_hWnd, ScreenDC, &ptw, &pts, MemDC, &ptsrc, 0, &blend, ULW_ALPHA);
+	//RECT rcWin = {0};
+	//GetWindowRect(m_hWnd,&rcWin);
+	//POINT ptw = {rcWin.left,rcWin.top};
+	//SIZE pts = {rcWin.right-rcWin.left,rcWin.bottom-rcWin.top};
+	//POINT ptsrc = {0};
+	//HDC ScreenDC = GetDC(0);
+	//UpdateLayeredWindow(m_hWnd, ScreenDC, &ptw, &pts, MemDC, &ptsrc, 0, &blend, ULW_ALPHA);
 
-	ReleaseDC(0,ScreenDC);
+	//ReleaseDC(0,ScreenDC);
 	//RenderTargetDC dc(m_interopTarget);
 	
 	if(hr == D2DERR_RECREATE_TARGET)
 	{// The caller needs to re-create the render target then attempt to render the frame again
-		SafeRelease(m_pD2DFactory);
+		DiscardDeviceResources();
 	}
 }

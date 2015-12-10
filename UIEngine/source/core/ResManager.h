@@ -26,100 +26,65 @@ enum TEXTURE_TYPE{
 	NINE,
 	THREE_H,
 };
-//'R' is short for "Render"
+//'R' is short for "Resource"
 
 class RPicture
 {
 public:
-	RPicture():m_hResHandle(NULL)
-			  ,m_szResID("")
-			  ,m_szResTypeInfo("")
-			  ,m_pngWidth(0)
-			  ,m_pngHeight(0)
-			  ,m_colorType(0)
-			  ,m_bitDepth(0)
-			  ,m_pixelDepth(0)
-			  ,m_rowPointers(NULL)
-			  ,m_pngStructPtr(NULL)
-			  ,m_pngInfoPtr(NULL)
-			  ,m_resError(RES_SUCCESS)
-	{};
-	virtual ~RPicture()
-	{
-		//m_rowPointers is allocated by malloc() in function png_create_read_struct(),
-		//thus release with free()
-		if (m_rowPointers)
-		{
-			//for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
-				//free(m_rowPointers[rowIndex]);
-
-			free(m_rowPointers[0]);
-		}
-		
-		if (m_pngStructPtr && m_pngInfoPtr)
-			png_destroy_read_struct(&m_pngStructPtr, &m_pngInfoPtr, NULL);
-			
-		cout<<"ID: "<<m_szResID<<" free m_rowPointers done"<<endl;
-	}
-	void SetResID(string resID)
-	{
-		m_szResID = resID;
-	}
-	RESERROR GetLastResError(){ return m_resError;}
-	RESERROR WritePngFile(LPCWSTR wszFilePath);
-	RESERROR CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType);
-	png_bytep * GetRowPointers() const
-	{
-		return m_rowPointers;
-	}
-	png_infop GetPngInfo()
-	{
-		return m_pngInfoPtr;
-	}
-	virtual RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
+									RPicture();
+	virtual							~RPicture();
+	void							SetResID(string resID);
+	RESERROR						GetLastResError() const;
+	RESERROR						WritePngFile(LPCWSTR wszFilePath);
+	RESERROR						CreatePicByData(LPCSTR szResID, 
+													png_bytep* rowPointers, 
+													unsigned int width, 
+													unsigned int height, 
+													png_byte bitDepth, 
+													png_byte colorType);
+	png_bytep*						GetRowPointers() const;
+	png_infop						GetPngInfo() const;
+	virtual RESERROR				Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom) = 0;
 protected:
-	virtual RESERROR LoadResource(LPCWSTR wszResPath) = 0;
-	RESERROR ReadPngFile(LPCWSTR wszFilePath);
+	virtual RESERROR				LoadResource(LPCWSTR wszResPath) = 0;
+	RESERROR						ReadPngFile(LPCWSTR wszFilePath);
 	
 	
-	bool IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
-	bool IsHorizontalLine(unsigned int verticalPos, COLORREF lineColor);
-	png_uint_32 m_pngWidth;
-	png_uint_32 m_pngHeight;
-	png_byte    m_colorType;
-	png_byte    m_bitDepth;
-	png_byte    m_pixelDepth;
-	png_bytep * m_rowPointers; //In fact, m_rowPointers is a two-dimensional array
-	png_structp m_pngStructPtr;
-	png_infop   m_pngInfoPtr;
+	bool							IsVerticalLine(unsigned int horizontalPos, COLORREF lineColor);
+	bool							IsHorizontalLine(unsigned int verticalPos, COLORREF lineColor);
+	png_uint_32						m_pngWidth;
+	png_uint_32						m_pngHeight;
+	png_byte						m_colorType;
+	png_byte						m_bitDepth;
+	png_byte						m_pixelDepth;
+	png_bytep*						m_rowPointers; //In fact, m_rowPointers is a two-dimensional array
+	png_structp						m_pngStructPtr;
+	png_infop						m_pngInfoPtr;
 
-	HBITMAP m_hResHandle;//??????
-	string m_szResID;
-	string m_szResTypeInfo;
-	RESERROR m_resError;
+	HBITMAP							m_hResHandle;//??????
+	string							m_szResID;
+	string							m_szResTypeInfo;
+	RESERROR						m_resError;
 
 };
 
 class RImage: public RPicture
 {
 public:
-	RImage(){};
-	RImage(LPCWSTR wszResPath, LPCSTR szResID){
-		//LoadResource(wszResPath);
-		SetResID(szResID);
-		ReadPngFile(wszResPath);
-	}
-	RImage(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType)
-	{
-		SetResID(szResID);
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
-	}
-	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+									RImage(){};
+									RImage(LPCWSTR wszResPath, LPCSTR szResID);
+									RImage(LPCSTR szResID, 
+										   png_bytep* rowPointers, 
+										   unsigned int width, 
+										   unsigned int height,
+										   png_byte bitDepth, 
+										   png_byte colorType);
+	RESERROR						LoadResource(LPCWSTR wszResPath);
+	RESERROR						Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
 private:
-	RESERROR CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
-	vector<ID2D1Bitmap*> m_arrD2D1Bitmap;
+	RESERROR						CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
+	vector<ID2D1Bitmap*>			m_arrD2D1Bitmap;
 };
 
 //a texture object's resource ID *must* begin with "texture"
@@ -137,41 +102,23 @@ private:
 class RTexture: public RPicture
 {
 public:
-	RTexture():m_purpleLineColor(RGB(255,0,255))
-	{
-		InitMemberVariable();
-	};
-	RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGB(255,0,255))
-	{
-		InitMemberVariable();
-		//LoadResource(wszResPath);
-		SetResID(szResID);
-		SetTextureType(szResID);
-		m_resError = ReadPngFile(wszResPath);
-		if (RES_SUCCESS == m_resError)
-		{
-			ProcessTexture();
-		}
-	};
-	//create a texture object with a two-dimensional array, and assign the png width and height
-	RTexture(LPCSTR szResID, png_bytep* rowPointers, unsigned int width, unsigned int height, png_byte bitDepth, png_byte colorType):m_purpleLineColor(RGB(255,0,255))
-	{
-		InitMemberVariable();
-		SetResID(szResID);
-		SetTextureType(szResID);
-		m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
-		if (RES_SUCCESS == m_resError)
-		{
-			ProcessTexture();
-		}
-	}
-	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+									RTexture();
+									RTexture(LPCWSTR wszResPath, LPCSTR szResID);
+									//create a texture object with a two-dimensional array, and assign the png width and height
+									RTexture(LPCSTR szResID, 
+											 png_bytep* rowPointers, 
+											 unsigned int width, 
+											 unsigned int height, 
+											 png_byte bitDepth, 
+											 png_byte colorType);
+
+	RESERROR						LoadResource(LPCWSTR wszResPath);
+	RESERROR						Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
-	RESERROR DetectVerticalLine();
-	RESERROR DetectHorizontalLine();
+	RESERROR						DetectVerticalLine();
+	RESERROR						DetectHorizontalLine();
 private:
-	void SetTextureType(LPCSTR resID)
+	void							SetTextureType(LPCSTR resID)
 	{
 		string strResID = resID;
 		if (string::npos != strResID.find("ThreeV"))
@@ -183,26 +130,26 @@ private:
 		else
 			abort();
 	}
-	void InitMemberVariable()
+	void							InitMemberVariable()
 	{
 
 	}
-	RESERROR ProcessTexture();
-	RESERROR CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_Nine(ID2D1RenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_ThreeV(ID2D1RenderTarget* pRenderTarget);
-	RESERROR _CreateD2D1Bitmap_ThreeH(ID2D1RenderTarget* pRenderTarget);
+	RESERROR						ProcessTexture();
+	RESERROR						CreateD2D1Bitmap(ID2D1RenderTarget* pRenderTarget);
+	RESERROR						_CreateD2D1Bitmap_Nine(ID2D1RenderTarget* pRenderTarget);
+	RESERROR						_CreateD2D1Bitmap_ThreeV(ID2D1RenderTarget* pRenderTarget);
+	RESERROR						_CreateD2D1Bitmap_ThreeH(ID2D1RenderTarget* pRenderTarget);
 
-	RESERROR _Draw_Nine(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
-	RESERROR _Draw_ThreeV(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
-	RESERROR _Draw_ThreeH(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
-	//vertical dividing line's position in horizontal direction
-	vector<unsigned int> m_arrVerticalLinePos;
-	//horizontal dividing line's position in vertical direction
-	vector<unsigned int> m_arrHorizontalLinePos;
-	vector<ID2D1Bitmap*> m_arrD2D1Bitmap;
-	const COLORREF m_purpleLineColor;
-	TEXTURE_TYPE m_textureType;
+	RESERROR						_Draw_Nine(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR						_Draw_ThreeV(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+	RESERROR						_Draw_ThreeH(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
+									//vertical dividing line's position in horizontal direction
+	vector<unsigned int>			m_arrVerticalLinePos;
+									//horizontal dividing line's position in vertical direction
+	vector<unsigned int>			m_arrHorizontalLinePos;
+	vector<ID2D1Bitmap*>			m_arrD2D1Bitmap;
+	const COLORREF					m_purpleLineColor;
+	TEXTURE_TYPE					m_textureType;
 };
 
 //a RPicList object's resource ID *must* begin with "imagelist" or "texturelist"
@@ -227,89 +174,43 @@ private:
 class RPicList: public RPicture
 {
 public:
-	RPicList():m_purpleLineColor(RGB(127,0,127)){};
+									RPicList();
+									RPicList(LPCWSTR wszResPath, LPCSTR resID);
+									~RPicList();
+	RPicture*						GetPicByIndex(unsigned int index);
+	RESERROR						LoadResource(LPCWSTR wszResPath);
 
-	RPicList(LPCWSTR wszResPath, LPCSTR resID):m_purpleLineColor(RGB(127,0,127))
-	{
-		//LoadResource(wszResPath);
-		SetResID(resID);
-		SetPicListType(resID);
-		m_resError = ReadPngFile(wszResPath);
-		if (RES_SUCCESS != m_resError)
-			return;
-
-		m_resError = DetectVerticalLine();
-		if (RES_SUCCESS != m_resError)
-			return;
-
-		m_resError = CreatePicFromMem();
-	}
-	~RPicList()
-	{
-		for (unsigned int i=0; i<m_picListVector.size(); ++i)
-			delete m_picListVector[i];
-	}
-	RPicture* GetPicByIndex(unsigned int index)
-	{
-		if (m_picListVector.size() <= index)
-			return NULL;
-		return m_picListVector[index];
-	}
-	
-	RESERROR LoadResource(LPCWSTR wszResPath);
-	RESERROR Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom){ return RES_SUCCESS;};//RPicList do not need a draw function
+									//RPicList do not need a draw function
+	RESERROR						Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom);
 protected:
-	RESERROR DetectVerticalLine();
-	RESERROR CreatePicFromMem();
+	RESERROR						DetectVerticalLine();
+	RESERROR						CreatePicFromMem();
 private:
-	void SetPicListType(LPCSTR resID)
-	{
-		string strResID = resID;
-		if (0 == strResID.find("texturelist"))
-			m_picListType = TEXTURELIST;
-		else if (0 == strResID.find("imagelist"))
-			m_picListType = IMAGELIST;
-		else
-			abort();
-	}
-	//vertical dividing line's position in horizontal direction
-	vector<unsigned int> m_arrVerticalLinePos;
-	const COLORREF m_purpleLineColor;
-	vector<RPicture*> m_picListVector;
-	PICLIST_TYPE m_picListType;
+	void							SetPicListType(LPCSTR resID);
+	
+									//vertical dividing line's position in horizontal direction
+	vector<unsigned int>			m_arrVerticalLinePos;
+	const COLORREF					m_purpleLineColor;
+	vector<RPicture*>				m_picListVector;
+	PICLIST_TYPE					m_picListType;
 	
 };
 
 class ResManager
 {
 public:
-	ResManager(){};
-	ResManager(LPWSTR szResPath){
-		SetResPath(szResPath);
-	}
-	~ResManager()
-	{
-		map<string, RPicture*>::iterator iter = m_resID2HandleMap.begin();
-		for (;iter != m_resID2HandleMap.end(); ++iter)
-		{
-			delete iter->second;
-		}
-	}
-	RESERROR SetResPath(LPWSTR wszResPath){
-		m_wszResPath = wszResPath;
-		if (::PathFileExists(wszResPath))
-			return RES_SUCCESS;
-		
-		return RES_ERROR_FILE_NOT_FOUND;
-	}
-	static bool CheckPngFileHead(LPWSTR wszFilePath);
-	RESERROR GetResPicHandle(LPCSTR szResID, RPicture** hRes);
+									ResManager(){};
+									ResManager(LPWSTR szResPath);
+									~ResManager();
+	RESERROR						SetResPath(LPWSTR wszResPath);
+	static bool						CheckPngFileHead(LPWSTR wszFilePath);
+	RESERROR						GetResPicHandle(LPCSTR szResID, RPicture** hRes);
 protected:
 private:
-	unsigned int GetIndexFromPicListId(LPCSTR szPicListID);
-	string GetRealIdFromPicListId(LPCSTR szPicListID);
-	wstring GetPicPathByID(LPCSTR szResID);
-	wstring m_wszResPath;
-	map<string, RPicture*> m_resID2HandleMap;
+	unsigned int					GetIndexFromPicListId(LPCSTR szPicListID);
+	string							GetRealIdFromPicListId(LPCSTR szPicListID);
+	wstring							GetPicPathByID(LPCSTR szResID);
+	wstring							m_wszResPath;
+	map<string, RPicture*>			m_resID2HandleMap;
 };
 #endif

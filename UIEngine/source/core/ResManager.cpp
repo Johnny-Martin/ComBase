@@ -3,6 +3,59 @@
 #include "png.h"
 #include <sstream>
 
+RPicture::RPicture():m_hResHandle(NULL)
+					,m_szResID("")
+					,m_szResTypeInfo("")
+					,m_pngWidth(0)
+					,m_pngHeight(0)
+					,m_colorType(0)
+					,m_bitDepth(0)
+					,m_pixelDepth(0)
+					,m_rowPointers(NULL)
+					,m_pngStructPtr(NULL)
+					,m_pngInfoPtr(NULL)
+					,m_resError(RES_SUCCESS)
+{
+
+}
+
+RPicture::~RPicture()
+{
+	//m_rowPointers is allocated by malloc() in function png_create_read_struct(),
+	//thus release with free()
+	if (m_rowPointers)
+	{
+		//for (unsigned int rowIndex=0; rowIndex<m_pngHeight; ++rowIndex)
+		//free(m_rowPointers[rowIndex]);
+
+		free(m_rowPointers[0]);
+	}
+
+	if (m_pngStructPtr && m_pngInfoPtr)
+		png_destroy_read_struct(&m_pngStructPtr, &m_pngInfoPtr, NULL);
+
+	cout<<"ID: "<<m_szResID<<" free m_rowPointers done"<<endl;
+}
+
+void RPicture::SetResID(string resID)
+{
+	m_szResID = resID;
+}
+RESERROR RPicture::GetLastResError() const
+{ 
+	return m_resError;
+}
+
+png_bytep* RPicture::GetRowPointers() const
+{
+	return m_rowPointers;
+}
+
+png_infop RPicture::GetPngInfo() const
+{
+	return m_pngInfoPtr;
+}
+
 bool RPicture::IsVerticalLine(unsigned int horizontalPos, const COLORREF lineColor)
 {
 	unsigned int bytesPerPixel = m_pixelDepth/8;
@@ -204,6 +257,25 @@ RESERROR RPicture::CreatePicByData(LPCSTR szResID, png_bytep* rowPointers, unsig
 
 	return RES_SUCCESS;
 }
+
+RImage::RImage(LPCWSTR wszResPath, LPCSTR szResID)
+{
+	//LoadResource(wszResPath);
+	SetResID(szResID);
+	ReadPngFile(wszResPath);
+}
+
+RImage::RImage(LPCSTR szResID, 
+			   png_bytep* rowPointers, 
+			   unsigned int width, 
+			   unsigned int height, 
+			   png_byte bitDepth, 
+			   png_byte colorType)
+{
+	SetResID(szResID);
+	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+}
+
 RESERROR RImage::LoadResource(LPCWSTR wszResPath)
 {
 	return RES_SUCCESS;
@@ -354,6 +426,39 @@ void PrintPngPixelData(png_byte* pngData, UINT pixelWidth, UINT pixelHeight, UIN
 	}
 	outFile<<endl;
 	outFile.close();
+}
+RTexture::RTexture():m_purpleLineColor(RGB(255,0,255))
+{
+	InitMemberVariable();
+};
+RTexture::RTexture(LPCWSTR wszResPath, LPCSTR szResID):m_purpleLineColor(RGB(255,0,255))
+{
+	InitMemberVariable();
+	//LoadResource(wszResPath);
+	SetResID(szResID);
+	SetTextureType(szResID);
+	m_resError = ReadPngFile(wszResPath);
+	if (RES_SUCCESS == m_resError)
+	{
+		ProcessTexture();
+	}
+}
+RTexture::RTexture(LPCSTR szResID, 
+				   png_bytep* rowPointers, 
+				   unsigned int width, 
+				   unsigned int height, 
+				   png_byte bitDepth, 
+				   png_byte colorType
+				   ):m_purpleLineColor(RGB(255,0,255))
+{
+	InitMemberVariable();
+	SetResID(szResID);
+	SetTextureType(szResID);
+	m_resError = CreatePicByData(szResID, rowPointers, width, height, bitDepth, colorType);
+	if (RES_SUCCESS == m_resError)
+	{
+		ProcessTexture();
+	}
 }
 RESERROR RTexture::_CreateD2D1Bitmap_ThreeV(ID2D1RenderTarget* pRenderTarget)
 {
@@ -517,6 +622,10 @@ RESERROR RTexture::_CreateD2D1Bitmap_Nine(ID2D1RenderTarget* pRenderTarget)
 				{
 					UINT offset = (lastBlockXEnd + 1)*4 + (rowIndex + lastBlockYEnd + 1)*pngRowSize + columnIndex;
 					curBlockData[rowIndex*curBlockRowSize + columnIndex] = pngData[offset];
+					if (columnIndex%4 == 3)
+					{
+						curBlockData[rowIndex*curBlockRowSize + columnIndex] = 180;
+					}
 				}
 		}else
 		{
@@ -693,6 +802,52 @@ RESERROR RTexture::Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, U
 
 	return RES_SUCCESS;
 }
+
+RPicList::RPicList():m_purpleLineColor(RGB(127,0,127))
+{
+
+}
+RPicList::RPicList(LPCWSTR wszResPath, LPCSTR resID):m_purpleLineColor(RGB(127,0,127))
+{
+	//LoadResource(wszResPath);
+	SetResID(resID);
+	SetPicListType(resID);
+	m_resError = ReadPngFile(wszResPath);
+	if (RES_SUCCESS != m_resError)
+		return;
+
+	m_resError = DetectVerticalLine();
+	if (RES_SUCCESS != m_resError)
+		return;
+
+	m_resError = CreatePicFromMem();
+}
+RPicList::~RPicList()
+{
+	for (unsigned int i=0; i<m_picListVector.size(); ++i)
+		delete m_picListVector[i];
+}
+RPicture* RPicList::GetPicByIndex(unsigned int index)
+{
+	if (m_picListVector.size() <= index)
+		return NULL;
+	return m_picListVector[index];
+}
+//RPicList do not need a draw function
+RESERROR RPicList::Draw(ID2D1RenderTarget* pRenderTarget, UINT left, UINT top, UINT right, UINT bottom)
+{ 
+	return RES_SUCCESS;
+}
+void RPicList::SetPicListType(LPCSTR resID)
+{
+	string strResID = resID;
+	if (0 == strResID.find("texturelist"))
+		m_picListType = TEXTURELIST;
+	else if (0 == strResID.find("imagelist"))
+		m_picListType = IMAGELIST;
+	else
+		abort();
+}
 RESERROR RPicList::LoadResource(LPCWSTR wszResPath)
 {
 	//++++++++++++++++++++++++++++++++++++++++++
@@ -793,6 +948,27 @@ RESERROR RPicList::CreatePicFromMem()
 
 	m_arrVerticalLinePos.pop_back();
 	return RES_SUCCESS;
+}
+ResManager::ResManager(LPWSTR szResPath)
+{
+	SetResPath(szResPath);
+}
+ResManager::~ResManager()
+{
+	map<string, RPicture*>::iterator iter = m_resID2HandleMap.begin();
+	for (;iter != m_resID2HandleMap.end(); ++iter)
+	{
+		delete iter->second;
+	}
+}
+
+RESERROR ResManager::SetResPath(LPWSTR wszResPath)
+{
+	m_wszResPath = wszResPath;
+	if (::PathFileExists(wszResPath))
+		return RES_SUCCESS;
+
+	return RES_ERROR_FILE_NOT_FOUND;
 }
 wstring ResManager::GetPicPathByID(LPCSTR szResID)
 {

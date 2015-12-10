@@ -15,35 +15,25 @@ inline void SafeRelease(Type& pObjToRelease)
 class FrameWnd
 {
 public:
-	FrameWnd(){};
-	~FrameWnd(){
-		SafeRelease(m_pD2DFactory);
-		SafeRelease(m_pRenderTarget);
-	};
-	bool Initialize(HINSTANCE hInstance);
+	FrameWnd();
+	~FrameWnd();
+	HRESULT Initialize(HINSTANCE hInstance);
 	
-	void RunMessageLoop()
-	{
-		MSG message;
-
-		while(GetMessage(&message, NULL, 0, 0))
-		{
-			TranslateMessage(&message);
-			DispatchMessage(&message);
-		}
-	}
+	void RunMessageLoop();
+	HWND GetWndHandle();
 protected:
-	BOOL CreateDeviceIndependentResources();
-	BOOL CreateDeviceDependentResources();
-
-	void	OnRender();
-	void	OnResize(UINT uWidth, UINT uHeight);
-	static  LRESULT CALLBACK WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
+	HRESULT						CreateDeviceIndependentResources();
+	HRESULT						CreateDeviceResources();
+	void						DiscardDeviceResources();
+	void						OnRender(const PAINTSTRUCT &ps);
+	void						OnResize(UINT uWidth, UINT uHeight);
+	static LRESULT CALLBACK     WndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
 private:
 	HWND						m_hWnd;
 	HDC 						m_hWndDC;
 	ID2D1Factory*				m_pD2DFactory;
 	ID2D1HwndRenderTarget*		m_pRenderTarget;
+    ID2D1SolidColorBrush*		m_pSolidBrush;
 
 	//use ID2D1DCRenderTarget when drawing on the window instead of 
 	//ID2D1HwndRenderTarget. if use the ID2D1HwndRenderTarget, the
@@ -52,9 +42,6 @@ private:
 	//SetLayeredWindowAttributes
 	ID2D1DCRenderTarget*		m_pDCRenderTarget;
 	//ID2D1GdiInteropRenderTarget m_pGdiRenderTarget;
-
-	ID2D1Brush* tmpBrush;
-	ID2D1SolidColorBrush* m_pSolidBrush;
 };
 
 class ModalWnd:public FrameWnd
