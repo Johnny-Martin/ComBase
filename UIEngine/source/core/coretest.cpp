@@ -291,7 +291,8 @@ void example_6(HINSTANCE hInstance)
 		return;
 	
 	FrameWnd Demo;
-	if(Demo.Initialize(hInstance))
+	HRESULT hr = Demo.Initialize(hInstance);
+	if(SUCCEEDED(hr))
 	{
 		Demo.RunMessageLoop();
 	}
