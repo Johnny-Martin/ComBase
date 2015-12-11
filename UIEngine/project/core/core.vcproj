@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\source\core\UIFactory.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\source\core\UIFrameWnd.cpp"
 				>
 			</File>
@@ -217,6 +221,10 @@
 			</File>
 			<File
 				RelativePath="..\..\source\core\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\core\UIFactory.h"
 				>
 			</File>
 			<File
