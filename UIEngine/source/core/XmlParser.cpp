@@ -11,6 +11,149 @@ static const char CARRIAGE_RETURN		= (char)0x0d;
 static const char CR = CARRIAGE_RETURN;
 static const char SPACE_KEY				= (char)0x20;
 static const char SP = SPACE_KEY;
+
+XMLabel::XMLabel()
+:m_bLabelClose(false)
+,m_bLabelHeadClose(false)
+,m_bLabelTailClose(false)
+,m_pParent(NULL)
+{
+
+}
+
+void XMLabel::SetLabelClassName(const string className)
+{
+	m_labelClassName = className;
+}
+
+string XMLabel::GetLabelClassName()
+{
+	return m_labelClassName;
+}
+
+void XMLabel::SetLabelValue(const string value)
+{
+	m_labelValue = value;
+}
+
+string XMLabel::GetLabelValue()
+{ 
+	return m_labelValue;
+}
+
+void XMLabel::SetLabelId(const string labelId)
+{
+	m_labelId = labelId;
+}
+
+string XMLabel::GetLabelId()
+{
+	return m_labelId;
+}
+
+void XMLabel::SetParent(XMLabel* pParent)
+{
+	m_pParent = pParent;
+}
+XMLabel* XMLabel::GetParent()
+{
+	return m_pParent;
+}
+
+void XMLabel::SetLabelHeadClose(bool bClose)
+{
+	m_bLabelHeadClose = bClose;
+}
+
+bool XMLabel::GetLabelHeadClose()
+{
+	return m_bLabelHeadClose;
+}
+
+void XMLabel::SetLabelTailClose(bool bClose)
+{
+	m_bLabelTailClose = bClose;
+}
+
+bool XMLabel::GetLabelTailClose()
+{
+	return m_bLabelTailClose;
+}
+
+//this few functions should be in UEObject Class
+XMLERROR XMLabel::AddChild(XMLabel* pChild)
+{
+	set<XMLabel*>::iterator iter = m_pChildrenSet.find(pChild);
+
+	if (iter != m_pChildrenSet.end()){
+		return XML_WRONG_CHILDREN_ID_RECOVER;
+	}
+	m_pChildrenSet.insert(pChild);
+	return XML_SUCCESS;
+}
+
+XMLERROR XMLabel::RemoveChildById(string childId)
+{
+	set<XMLabel*>::iterator iter;
+	for (iter=m_pChildrenSet.begin(); m_pChildrenSet.end() != iter; ++iter)
+	{
+		if ((*iter)->GetLabelId() == childId)
+		{
+			m_pChildrenSet.erase(iter);
+			//Dispatch event
+			return XML_SUCCESS;
+		}
+	}
+	return XML_WRONG_CHILDREN_ID_NOTFOUND;
+}
+
+XMLERROR XMLabel::SetAttribute(string key, string value)
+{
+	m_labelAttrMap.insert(std::pair<string, string>(key, value));
+	return XML_SUCCESS;
+}
+
+string XMLabel::GetAttribute(string key)
+{
+	map<string, string>::iterator iter = m_labelAttrMap.find(key);
+	if (m_labelAttrMap.end() != iter)
+		return (*iter).second;
+
+	return NULL;
+}
+
+XMLERROR XMLabel::AddAttribute(map<string, string> *paraMap)
+{
+	string attrKey;
+	string attrValue;
+	map<string, string>::iterator iter;
+	for (iter=paraMap->begin(); iter!=paraMap->end(); ++iter)
+	{
+		attrKey = iter->first;
+		attrValue = iter->second;
+		m_labelAttrMap.insert(std::pair<string, string>(attrKey, attrValue));
+	}
+	return XML_SUCCESS;
+}
+
+XMLERROR XMLabel::HandleAttrLabel()
+{
+	XMLabel* attrObj ;//= m_pChildrenSet.find();
+	if (NULL == attrObj)
+		return XML_SUCCESS;
+	if (attrObj->GetLabelClassName() != "attr")
+		return XML_ERROR_UNKNOWN;
+	//list<XMLabel>::iterator iter = attrObj->
+}
+
+void XMLabel::SetLabelClose(bool bClose)
+{
+	m_bLabelClose = bClose;
+}
+bool XMLabel::GetLabelClose()
+{
+	return m_bLabelClose;
+}
 ////////////////////////////////////////////////////////////////
 //UTF-8是一种变长字节编码方式，第一字节高位连续的1的个数代表了该
 //字符占得字节数，其余字节皆以10开头
@@ -96,91 +239,6 @@ bool CompileXml()
 	return false;
 }
 
-set<string> CBaseWnd::m_attrNameSet = CBaseWnd::InitAttrNameSet();
-set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameSet();
-
-set<string> CBaseWnd::InitAttrNameSet()
-{
-	set<string> attrNameSet;
-	attrNameSet.insert("position");
-	attrNameSet.insert("left");
-	attrNameSet.insert("top");
-	attrNameSet.insert("right");
-	attrNameSet.insert("bottom");
-	attrNameSet.insert("leftexp");
-	attrNameSet.insert("topexp");
-	attrNameSet.insert("rightexp");
-	attrNameSet.insert("bottomexp");
-	attrNameSet.insert("title");
-	attrNameSet.insert("visible");
-	attrNameSet.insert("enable");
-	attrNameSet.insert("topmost");
-	attrNameSet.insert("layered");
-	attrNameSet.insert("appwnd");
-	attrNameSet.insert("blur");
-	attrNameSet.insert("minenable");
-	attrNameSet.insert("maxenable");
-	attrNameSet.insert("rootobjectid");
-	
-	return attrNameSet;
-}
-bool CBaseWnd::InitAttrMap()
-{
-	m_attrMap.insert(pair<string, string>("position", ""));
-	m_attrMap.insert(pair<string, string>("left", "0"));
-	m_attrMap.insert(pair<string, string>("top", "0"));
-	m_attrMap.insert(pair<string, string>("right", "0"));
-	m_attrMap.insert(pair<string, string>("bottom", "0"));
-	m_attrMap.insert(pair<string, string>("leftexp", ""));
-	m_attrMap.insert(pair<string, string>("topexp", ""));
-	m_attrMap.insert(pair<string, string>("rightexp", ""));
-	m_attrMap.insert(pair<string, string>("bottomexp", ""));
-	m_attrMap.insert(pair<string, string>("visible", "1"));
-	m_attrMap.insert(pair<string, string>("enable", "1"));
-	m_attrMap.insert(pair<string, string>("topmost", "0"));
-	m_attrMap.insert(pair<string, string>("layered", "1"));
-	m_attrMap.insert(pair<string, string>("appwnd", "1"));
-	m_attrMap.insert(pair<string, string>("blur", "0"));
-	m_attrMap.insert(pair<string, string>("minenable", "1"));
-	m_attrMap.insert(pair<string, string>("maxenable", "1"));
-	m_attrMap.insert(pair<string, string>("rootobjectid", ""));
-	return true;
-}
-set<string> CBaseWnd::InitEventNameSet()
-{
-	set<string> eventNameSet;
-	eventNameSet.insert("OnCreate");
-	eventNameSet.insert("OnShowWnd");
-	eventNameSet.insert("OnShowWnd");
-	eventNameSet.insert("OnDestory");
-	eventNameSet.insert("OnStateChange");
-	eventNameSet.insert("OnMove");
-	eventNameSet.insert("OnSize");
-	eventNameSet.insert("OnVisibleChange");
-	eventNameSet.insert("OnEnableChange");
-	eventNameSet.insert("OnCreate");
-
-	return eventNameSet;
-}
-bool CBaseWnd::SetAttr(string key, string value)
-{
-	if (m_attrNameSet.end() != m_attrNameSet.find(key))
-	{
-		m_attrMap.insert(pair<string, string>(key, value));
-		return true;
-	}
-	return false;
-}
-bool CBaseWnd::GetAttr(string key, string* value)
-{
-	map<string, string>::iterator iter = m_attrMap.find(key);
-	if (m_attrMap.end() != iter)
-	{
-		*value = iter->second;
-		return true;
-	}
-	return false;
-}
 
 //a label name end with 0x20(space)、LF、CR、HT、'/>'、or '>'
 //read a whole label(until '>'), if match '/>',then close the label;
@@ -688,4 +746,22 @@ XMLERROR XMLFile::ParseXml(LPCWSTR pszFilePath, XMLabel** rootLabelObj)
 		
 	}
 	return XML_SUCCESS;
+}
+
+XMLERROR XMLFile::LoadXmlFile(LPCWSTR pszFilePath)
+{
+	BOOL ret = ::PathFileExists(pszFilePath);
+	if (!ret) 
+		return XML_WRONG_FILENOTEXISTS;
+
+	if (!XMLFile::CheckFileEncoding(pszFilePath))
+		return XML_WRONG_ENCODING_TYPE;
+
+	m_wszXmlFileName = PathFindFileNameW(pszFilePath);
+	return ParseXml(pszFilePath, &m_pRootLabel);
+}
+
+XMLabel* XMLFile::GetRootObj()
+{
+	return m_pRootLabel;
 }
