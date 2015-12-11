@@ -5,6 +5,93 @@
 
 #pragma comment(lib, "Windowscodecs.lib")
 
+
+set<string> CBaseWnd::m_attrNameSet = CBaseWnd::InitAttrNameSet();
+set<string> CBaseWnd::m_eventNameSet = CBaseWnd::InitEventNameSet();
+
+set<string> CBaseWnd::InitAttrNameSet()
+{
+	set<string> attrNameSet;
+	attrNameSet.insert("position");
+	attrNameSet.insert("left");
+	attrNameSet.insert("top");
+	attrNameSet.insert("right");
+	attrNameSet.insert("bottom");
+	attrNameSet.insert("leftexp");
+	attrNameSet.insert("topexp");
+	attrNameSet.insert("rightexp");
+	attrNameSet.insert("bottomexp");
+	attrNameSet.insert("title");
+	attrNameSet.insert("visible");
+	attrNameSet.insert("enable");
+	attrNameSet.insert("topmost");
+	attrNameSet.insert("layered");
+	attrNameSet.insert("appwnd");
+	attrNameSet.insert("blur");
+	attrNameSet.insert("minenable");
+	attrNameSet.insert("maxenable");
+	attrNameSet.insert("rootobjectid");
+
+	return attrNameSet;
+}
+bool CBaseWnd::InitAttrMap()
+{
+	m_attrMap.insert(pair<string, string>("position", ""));
+	m_attrMap.insert(pair<string, string>("left", "0"));
+	m_attrMap.insert(pair<string, string>("top", "0"));
+	m_attrMap.insert(pair<string, string>("right", "0"));
+	m_attrMap.insert(pair<string, string>("bottom", "0"));
+	m_attrMap.insert(pair<string, string>("leftexp", ""));
+	m_attrMap.insert(pair<string, string>("topexp", ""));
+	m_attrMap.insert(pair<string, string>("rightexp", ""));
+	m_attrMap.insert(pair<string, string>("bottomexp", ""));
+	m_attrMap.insert(pair<string, string>("visible", "1"));
+	m_attrMap.insert(pair<string, string>("enable", "1"));
+	m_attrMap.insert(pair<string, string>("topmost", "0"));
+	m_attrMap.insert(pair<string, string>("layered", "1"));
+	m_attrMap.insert(pair<string, string>("appwnd", "1"));
+	m_attrMap.insert(pair<string, string>("blur", "0"));
+	m_attrMap.insert(pair<string, string>("minenable", "1"));
+	m_attrMap.insert(pair<string, string>("maxenable", "1"));
+	m_attrMap.insert(pair<string, string>("rootobjectid", ""));
+	return true;
+}
+set<string> CBaseWnd::InitEventNameSet()
+{
+	set<string> eventNameSet;
+	eventNameSet.insert("OnCreate");
+	eventNameSet.insert("OnShowWnd");
+	eventNameSet.insert("OnShowWnd");
+	eventNameSet.insert("OnDestory");
+	eventNameSet.insert("OnStateChange");
+	eventNameSet.insert("OnMove");
+	eventNameSet.insert("OnSize");
+	eventNameSet.insert("OnVisibleChange");
+	eventNameSet.insert("OnEnableChange");
+	eventNameSet.insert("OnCreate");
+
+	return eventNameSet;
+}
+bool CBaseWnd::SetAttr(string key, string value)
+{
+	if (m_attrNameSet.end() != m_attrNameSet.find(key))
+	{
+		m_attrMap.insert(pair<string, string>(key, value));
+		return true;
+	}
+	return false;
+}
+bool CBaseWnd::GetAttr(string key, string* value)
+{
+	map<string, string>::iterator iter = m_attrMap.find(key);
+	if (m_attrMap.end() != iter)
+	{
+		*value = iter->second;
+		return true;
+	}
+	return false;
+}
+
 FrameWnd::FrameWnd():m_hWnd(NULL)
 ,m_hWndDC(NULL)
 ,m_pD2DFactory(NULL)
@@ -270,7 +357,8 @@ void FrameWnd::OnRender(const PAINTSTRUCT &ps)
 	
 	m_pDCRenderTarget->BeginDraw();
 	m_pDCRenderTarget->SetTransform(Matrix3x2F::Identity());
-	m_pDCRenderTarget->Clear(ColorF(ColorF::Black));
+	//m_pDCRenderTarget->Clear(ColorF(ColorF::Black));
+	m_pDCRenderTarget->Clear(ColorF(0.0f, 0.0f, 0.0f, 0.0f));
 
 	D2D1_RECT_F rc = RectF(130.0f, 10.0f, 230.0f, 110.0f);
 	m_pSolidBrush->SetColor(ColorF(0.0f,0.7f,0.1f,0.5f));

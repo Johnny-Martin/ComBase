@@ -1,6 +1,12 @@
+#ifndef UIFRAMEWND_H
+#define UIFRAMEWND_H
+
 #include "stdafx.h"
+#include <list>
+#include <xstring>
 
 using namespace D2D1;
+using namespace std;
 
 template<class Type>
 inline void SafeRelease(Type& pObjToRelease)
@@ -11,6 +17,36 @@ inline void SafeRelease(Type& pObjToRelease)
 		pObjToRelease = 0;
 	}
 }
+
+
+/////////////////CBaseWnd version 0.1 ////////////
+// create window object from xml file
+// the attribute in xml saved in map as a class member
+// the attribute include:
+// left, top, right, bottom, leftexp, topexp, rightexp, 
+// bottomexp,title, visible, enable,
+// topmost, layered, appwnd, blur, maxenable, minenable
+// rootobjectid, 
+//
+class CBaseWnd
+{
+public:
+	CBaseWnd(){ InitAttrMap(); }
+	bool SetAttr(string key, string value);
+	bool GetAttr(string key, string* value);
+	static bool CheckAttrName(string strName){ return (m_attrNameSet.end() != m_attrNameSet.find(strName)) ? true:false;}
+	static bool CheckEventName(string strName){ return (m_attrNameSet.end() != m_eventNameSet.find(strName)) ? true:false;}
+private:
+	static set<string> InitAttrNameSet();
+	static set<string> InitEventNameSet();
+
+	static set<string> m_attrNameSet;
+	static set<string> m_eventNameSet;
+
+	bool InitAttrMap();
+	map<string, string> m_attrMap;
+	map<string, string> m_eventMap;	
+};
 
 class FrameWnd
 {
@@ -70,3 +106,5 @@ public:
 protected:
 private:
 };
+
+#endif
