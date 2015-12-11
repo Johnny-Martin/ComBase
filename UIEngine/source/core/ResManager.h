@@ -1,10 +1,11 @@
+#ifndef RESOURCRMANAGER_H
+#define RESOURCRMANAGER_H
+
 #include "stdafx.h"
 #include "png.h"
 
 using namespace std;
 
-#ifndef RESOURCRMANAGER_H
-#define RESOURCRMANAGER_H
 enum RESERROR{
 	RES_SUCCESS = 0,
 	RES_ERROR_ILLEGAL_ID,
