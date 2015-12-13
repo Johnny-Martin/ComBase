@@ -10,6 +10,7 @@
 
 #include "ResManager.h"
 #include "UIFrameWnd.h"
+#include "..\luabridge\LuaBridge.h"
 //#include "zlib.h"
 
 //#define PNG_DEBUG 3
