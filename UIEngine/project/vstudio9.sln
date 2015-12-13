@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcproj", "{22AF8A4D-501C-4C86-A033-7E8C05EB2802}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luabridge", "luabridge\luabridge.vcproj", "{885D23BC-D527-4BC9-A7C5-B616FD026A65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{22AF8A4D-501C-4C86-A033-7E8C05EB2802}.Debug|Win32.Build.0 = Debug|Win32
 		{22AF8A4D-501C-4C86-A033-7E8C05EB2802}.Release|Win32.ActiveCfg = Release|Win32
 		{22AF8A4D-501C-4C86-A033-7E8C05EB2802}.Release|Win32.Build.0 = Release|Win32
+		{885D23BC-D527-4BC9-A7C5-B616FD026A65}.Debug|Win32.ActiveCfg = Debug|Win32
+		{885D23BC-D527-4BC9-A7C5-B616FD026A65}.Debug|Win32.Build.0 = Debug|Win32
+		{885D23BC-D527-4BC9-A7C5-B616FD026A65}.Release|Win32.ActiveCfg = Release|Win32
+		{885D23BC-D527-4BC9-A7C5-B616FD026A65}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
