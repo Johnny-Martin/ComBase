@@ -300,6 +300,18 @@ void example_6(HINSTANCE hInstance)
 
 	CoUninitialize();
 }
+void example_7()
+{
+	LuaBridge luaBridge;
+	if (LUA_ENV_SUCCESS == luaBridge.InitLuaEnv())
+	{
+		LUA_ENV_ERROR ret = luaBridge.LoadLuaFile("I:\\UIEngine\\project\\Debug\\test.lua");
+		if (LUA_ENV_SUCCESS == ret)
+		{
+			luaBridge.InvokeLuaFunction("OnLoadLuaFile", 31, 32);
+		}
+	}
+}
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int ShowCmd)
 //int _tmain(int argc, _TCHAR* argv[])
 {
@@ -309,7 +321,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	
 	//example_4();
 	//example_5();
-	example_6(hInstance);
+	//example_6(hInstance);
+	//CCallLua ();
+
+	example_7();
 	return 0;
 }
 
