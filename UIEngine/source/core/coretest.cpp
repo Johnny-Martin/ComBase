@@ -10,7 +10,7 @@
 
 #include "ResManager.h"
 #include "UIFrameWnd.h"
-#include "..\luabridge\LuaBridge.h"
+//#include "..\luabridge\LuaBridge.h"
 //#include "zlib.h"
 
 //#define PNG_DEBUG 3
@@ -20,7 +20,7 @@
 using namespace std;
 //using namespace tinyxml2;
 
-extern "C" int CCallLua ();
+//extern "C" int CCallLua ();
 
 /*
 int example_1()
@@ -302,7 +302,7 @@ void example_6(HINSTANCE hInstance)
 }
 void example_7()
 {
-	LuaBridge luaBridge;
+	/*LuaBridgeA luaBridge;
 	if (LUA_ENV_SUCCESS == luaBridge.InitLuaEnv())
 	{
 		LUA_ENV_ERROR ret = luaBridge.LoadLuaFile("I:\\UIEngine\\project\\Debug\\test.lua");
@@ -310,7 +310,7 @@ void example_7()
 		{
 			luaBridge.InvokeLuaFunction("OnLoadLuaFile", 31, 32);
 		}
-	}
+	}*/
 }
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int ShowCmd)
 //int _tmain(int argc, _TCHAR* argv[])
