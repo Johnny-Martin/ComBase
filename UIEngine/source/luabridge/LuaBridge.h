@@ -18,6 +18,7 @@ int LuaCallC();
 int CFun4Lua(lua_State* luaState);
 int CCallLua();
 int SetGlobalObject(lua_State* pLuaState);
+int MsgBox(lua_State* luaState);
 
 //Register function "SetGlobalObject"¡¢"GetGlobalObject" to lua EVN
 /*LuaGlobalFunctions
@@ -63,7 +64,8 @@ enum LUA_ENV_ERROR
 
 
 
-
+//Register C_Function for Lua ENV;
+//Invoke Lua function in Cpp code by using function name
 class LuaBridge
 {
 public:
@@ -76,11 +78,14 @@ public:
 
 	BEGIN_LUACFUNCTION_DECLARE()
 		REGISTER_CFUNCTION(SetGlobalObject)
+		REGISTER_CFUNCTION(MsgBox)
 	END_LUACFUNCTION_DECLARE()
 protected:
 private:
-	void						RegisterLuaGlobalFunctions(lua_State* pLuaStat);
-
+	void						InitLuaGlobalFunctions(lua_State* pLuaStat);
+	LUA_ENV_ERROR				RegisterCFunction(lua_State* pLuaStat, const char* pszFuncName, lua_CFunction pFun);
+	LUA_ENV_ERROR				RegisterCppObject(lua_State* pLuaStat, const char* pszObjectID, void* pObj);
+	LUA_ENV_ERROR				RegisterCppClass(lua_State* pLuaStat, const char* pszClassID, void* pClass);
 
 	lua_State*					m_luaState;
 	static int					m_initCFunctionArraySize;

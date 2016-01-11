@@ -55,13 +55,62 @@ int CCallLua()
 }  
 int CFun4Lua(lua_State* luaState)  
 {  
-	lua_Integer a = lua_tointeger(luaState,1) ;  
-	lua_Integer b = lua_tointeger(luaState,2) ;  
-	lua_pushinteger(luaState,a+b) ; 
+	lua_Integer a = lua_tointeger(luaState, 1);  
+	lua_Integer b = lua_tointeger(luaState, 2);  
+	lua_pushinteger(luaState, a+b); 
 
-	return 1 ;  
+	return 1;  
 }  
+//static bool  BSTRToLuaString( BSTR src, std::string& dest)
+//{
+//	if(!src)
+//		return false;
+//	int  iLen = (int)wcslen(src);
+//	if(iLen > 0)
+//	{
+//		char* szdest = new  char[iLen * 4];
+//		if(NULL == szdest)
+//			return false;
+//		ZeroMemory(szdest, iLen * 4);			
+//		int nLen = WideCharToMultiByte(CP_UTF8, NULL, src, iLen, szdest, iLen * 4, 0, 0);
+//		szdest[nLen] = '\0'; 
+//		dest = szdest;
+//		delete [] szdest ;
+//		return true;
+//	}
+//	return false;
+//}
+static bool LuaStringToWideChar(const char* src, wchar_t* &bstr)
+{
+	bstr = NULL;
+	if(!src)
+		return false;
 
+	int iLen = (int)strlen(src);
+	if(iLen <= 0)
+		return false;
+
+	bstr = new wchar_t[iLen * 4];
+	ZeroMemory(bstr, iLen * 4);
+	int nLen = MultiByteToWideChar(CP_UTF8, 0, src, iLen, bstr, iLen*4); 
+	bstr[nLen] = '\0';
+
+	return true;
+}
+int MsgBox(lua_State* luaState)
+{
+	const char* luaStr = lua_tostring(luaState, 1);
+	wchar_t* wszInfo = NULL;
+
+	bool ret = LuaStringToWideChar(luaStr, wszInfo);
+	if (ret)
+		MessageBox(NULL, wszInfo, L"MsgBox", MB_OK);
+	else
+		MessageBox(NULL, L"", L"MsgBox", MB_OK);
+	
+	delete wszInfo;
+	return 0;
+}
 //#define err_exit(num,fmt,args)  \  
 //do{printf("[%s:%d]",fmt,"\n",__FILE__,__LINE__,##args);exit(num);} while(0)
 //
@@ -107,7 +156,7 @@ int LuaCallC()
 
 int LuaBridge::m_initCFunctionArraySize = 0;
 
-void LuaBridge::RegisterLuaGlobalFunctions(lua_State* pLuaStat)
+void LuaBridge::InitLuaGlobalFunctions(lua_State* pLuaStat)
 {
 	const _LuaCFunctionInfo* pArray = LuaBridge::_GetCFunctionArray();
 	int iArrayLen = m_initCFunctionArraySize / sizeof(_LuaCFunctionInfo);
@@ -130,7 +179,8 @@ LUA_ENV_ERROR LuaBridge::InitLuaEnv()
 	if ( m_luaState == NULL )
 		return LUA_ENV_INITFAILED; 
 
-	RegisterLuaGlobalFunctions(m_luaState);
+	luaL_openlibs(m_luaState);
+	InitLuaGlobalFunctions(m_luaState);
 
 	return LUA_ENV_SUCCESS;
 }
