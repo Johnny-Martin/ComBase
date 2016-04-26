@@ -190,6 +190,11 @@ string: 1,string.upper(argument)Returns a capitalized representation of the argu
 		8,string.len(arg)Returns a length of the passed string.
 		9,string.rep(string, n))Returns a string by repeating the same string n number times.
 		10,..Thus operator concatenates two strings.
+		11,string.match
+		12,string.gmatch
+		13,string.find
+		14,string.sub
+		15,string.gsub
 
 math:   1.  math.abs  (x)Returns the absolute value of x.
 		2.	math.acos (x)Returns the arc cosine of x (in radians).
