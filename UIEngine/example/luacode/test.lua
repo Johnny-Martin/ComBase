@@ -1,30 +1,3 @@
--------------------LRT------------------
---share identifiers between lua files
---GetGlobal()
---SetGlobal()
-
---get engine inner object, like HTTP, objFactory, util, timerMgr etc.
---GetObject()
-
---singleton timerMgr's function
---KillTimer()
---SetTimer()
---SetDelay()
-
---function for debug
---MsgBox()
---Log()
-
---load and unload lua file, call OnUnloadLuaFile(if exists) before unload
---LoadLuaFile()
-
---UnloadLuaFile()
-
-function LuaFun4Cpp(a, b)
-	-- return a + b
-	return CFun4Lua(a, b) + 100
-end
-
 function SaveDataToFile(fileName, data)
 	local file = io.open(fileName, "a")
 	file:write(data)
@@ -79,9 +52,51 @@ function WriteFile(filePath, data, openMode)
 	file:close()
 end
 
+function MakeTableFromFile(path)
+	local file = io.open(path, "r+");
+	if not file then
+		print("ReadFile error: "..tostring(err))
+		return nil, err
+	end
+	local t = {}
+	for line in file:lines() do
+		table.insert(t, line)
+	end
+	
+	return t
+end
+
+function GetNewFolderNum(name)
+	if not name or "" == name then
+		return
+	end
+	local num = string.match(name, "(No%.%d+)")
+	if not num then
+		num = string.match(name, "%d+")
+		if num then
+			num = "No."..tostring(num)
+		end
+	end
+	return num
+end
+
 function OnLoadLuaFile(a, b)
-	local env = {}
-	local fun = loadfile("I:\\UIEngine\\example\\luacode\\config.lua", "t", env)
+	-- local env = {}
+	-- local fun = loadfile("I:\\UIEngine\\example\\luacode\\config.lua", "t", env)
 	-- fun()
-	MsgBox("height: "..tostring(env.height))
+	-- MsgBox("height: "..tostring(env.height))
+	
+	os.execute("dir /ad/b  > temp.txt")
+	
+	local folderTable = MakeTableFromFile("temp.txt")
+	for i=0, #folderTable do
+		local newName = GetNewFolderNum(folderTable[i])
+		if newName then
+			-- local status,_= pcall(os.execute("REN "..folderTable[i].." "..newName.." 2>null"))--重命名
+			local status,_= pcall(os.rename(folderTable[i], newName))--重命名
+			local info = newName .."  ==>  ".. folderTable[i].."\r\n"
+			WriteFile("info.txt", info)
+		end
+	end
+	-- MsgBox(tostring(GetNewFolderNum(folderTable and folderTable[2])))
 end
