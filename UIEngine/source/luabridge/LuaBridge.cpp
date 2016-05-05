@@ -12,12 +12,24 @@
 
 #include <lm.h>
 #pragma comment(lib, "Netapi32.lib")
+
+static bool WideCharToChar(const wchar_t* wszSrc, char* &szDst);
+
 void example_1()
 {
 	LuaBridge luaBridge;
 	if (LUA_ENV_SUCCESS == luaBridge.InitLuaEnv())
 	{
-		LUA_ENV_ERROR ret = luaBridge.LoadLuaFile("I:\\UIEngine\\example\\luacode\\test.lua");
+		TCHAR szFilePath[MAX_PATH + 1]={0};
+		GetModuleFileName(NULL, szFilePath, MAX_PATH);
+		(_tcsrchr(szFilePath, _T('\\')))[1] = 0; // 删除文件名，只获得路径字串
+		std::wstring str_url = szFilePath;  // 例如str_url==e:\program\Debug\
+
+		str_url = str_url + _T("test.lua");
+		char* pszUrl = NULL;
+		WideCharToChar(str_url.c_str(), pszUrl);
+
+		LUA_ENV_ERROR ret = luaBridge.LoadLuaFile(pszUrl);/*I:\\UIEngine\\example\\luacode\\ */
 		if (LUA_ENV_SUCCESS == ret)
 		{
 			luaBridge.InvokeLuaFunction("OnLoadLuaFile", 31, 32);
@@ -346,6 +358,24 @@ static bool WideCharToLuaString(const wchar_t* wszSrc, char* &szDst)
 			return false;
 		ZeroMemory(szDst, iLen * 4);			
 		int nLen = WideCharToMultiByte(CP_UTF8, NULL, wszSrc, iLen, szDst, iLen * 4, 0, 0);
+		szDst[nLen] = '\0'; 
+		return true;
+	}
+	return false;
+}
+static bool WideCharToChar(const wchar_t* wszSrc, char* &szDst)
+{
+	szDst = NULL;
+	if(!wszSrc)
+		return false;
+	int  iLen = (int)wcslen(wszSrc);
+	if(iLen > 0)
+	{
+		szDst = new char[iLen * 4];
+		if(NULL == szDst)
+			return false;
+		ZeroMemory(szDst, iLen * 4);			
+		int nLen = WideCharToMultiByte(CP_ACP, NULL, wszSrc, iLen, szDst, iLen * 4, 0, 0);
 		szDst[nLen] = '\0'; 
 		return true;
 	}
