@@ -69,30 +69,49 @@ end
 
 local arrFolder = {}
 function GetNewFileName(path)
-	path = "E:\\DISI\\test\\0df3d7ca7bcb0a46c468b3aa6b63f6246a60afde.jpg"
 	-- 匹配出jpg所在的文件夹
-	local folderPos = string.find(path, "%\$")
-	--匹配后缀
-	
-	MsgBox(tostring(folderPos)
-	local folderPath = string.sub(path, 1, folderPos)
-	if folderPath then
-		if not arrFolder.folderPath then
-			arrFolder.folderPath = 0
-		end
-		arrFolder.folderPath = arrFolder.folderPath + 1
-		local newName = nil
-		if arrFolder.folderPath < 10 then
-			newName = "00"..tostring(arrFolder.folderPath)
-		elseif arrFolder.folderPath < 100 then
-			newName = "0"..tostring(arrFolder.folderPath)
-		else
-			newName = tostring(arrFolder.folderPath)
-		end
+	local fileExtPosBegin, fileExtPosEnd = string.find(path, "(%..+)$")
+	if not fileExtPosBegin or not fileExtPosEnd then
+		return
 	end
-	MsgBox(tostring(folderName)
+	local fileExt = string.sub(path, fileExtPosBegin, fileExtPosEnd)
+	
+	local folderPosBegin, folderPosEnd = string.find(path, "\\") 
+	while (folderPosBegin) do
+		if string.find(path, "\\", folderPosBegin + 1) then
+			folderPosEnd   = folderPosBegin
+			folderPosBegin = string.find(path, "\\", folderPosBegin + 1)
+		else
+			break
+		end
+		 
+	end
+	
+	local folderName = string.sub(path, folderPosEnd+1, folderPosBegin-1)
+	if not folderName then
+		return
+	end
+	
+	if not arrFolder[folderName] then
+		arrFolder[folderName] = 0
+	end
+	
+	arrFolder[folderName] = arrFolder[folderName] + 1
+	
+	local newName = nil
+	if arrFolder[folderName] < 10 then
+		newName = "00"..tostring(arrFolder[folderName])
+	elseif arrFolder[folderName] < 100 then
+		newName = "0"..tostring(arrFolder[folderName])
+	else
+		newName = tostring(arrFolder[folderName])
+	end
+	
+	local tmpPath = string.sub(path, 1, folderPosBegin)
+	local newFullPath = tmpPath..newName..fileExt
+	return newFullPath, newName
 end
---[[--]]
+
 -- local status,_= pcall(os.execute("REN "..folderTable[i].." "..newName.." 2>null"))--重命名
 
 
@@ -113,6 +132,7 @@ function RenameCurRegularFolders()
 		return num
 	end
 	
+	os.execute("del /F /Q folder.txt")
 	os.execute("dir /r  > folder.txt")--列出当前文件夹下的子文件夹，不递归
 	local folderTable = MakeTableFromFile("folder.txt")
 	for i=1, #folderTable do
@@ -124,7 +144,7 @@ function RenameCurRegularFolders()
 		end
 	end
 	
-	--删掉folder.txt
+	-- 删掉folder.txt
 	os.execute("del /F /Q folder.txt")
 end
 
@@ -132,16 +152,17 @@ function RenameCurMessyFolders()
 	
 end
 
---将当前目录下的所有文件(递归),重命名
+--将当前目录下的所有名字不规则的文件(递归),重命名
 function RenameAllMessyFiles()
 	--递归列出当前文件夹下的所有文件
+	os.execute("del /F /Q allfiles.txt")
 	os.execute(" for /r %i in (*.jpg, *.png, *.jpeg, *.gif, *.bmp) do (echo %i >> allfiles.txt)")
 	local fileTable = MakeTableFromFile("allfiles.txt")
-	MsgBox(tostring(fileTable and #fileTable)
+	
 	for i=1, #fileTable do
-		local newName = GetNewFileName(fileTable[i])
-		if newName then
-			local status,_= pcall(os.rename(fileTable[i], newName))--重命名
+		local newFullPath, newName = GetNewFileName(fileTable[i])
+		if newFullPath then
+			local status,_= pcall(os.rename(fileTable[i], newFullPath))--重命名
 		end
 	end
 	
@@ -152,9 +173,7 @@ end
 function RenameAllRegularFiles()
 	
 end
-
+--[[--]]
 function OnLoadLuaFile(a, b)
-MsgBox(tostring(123)
-	-- RenameAllFiles()
-	-- GetNewFileName()
+	RenameAllMessyFiles()
 end
