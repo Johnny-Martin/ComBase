@@ -88,26 +88,27 @@ function GetNewFileName(path)
 	end
 	
 	local folderName = string.sub(path, folderPosEnd+1, folderPosBegin-1)
-	if not folderName then
+	local tmpPath = string.sub(path, 1, folderPosBegin)
+	if not tmpPath then
 		return
 	end
 	
-	if not arrFolder[folderName] then
-		arrFolder[folderName] = 0
+	if not arrFolder[tmpPath] then
+		arrFolder[tmpPath] = 0
 	end
 	
-	arrFolder[folderName] = arrFolder[folderName] + 1
+	arrFolder[tmpPath] = arrFolder[tmpPath] + 1
 	
 	local newName = nil
-	if arrFolder[folderName] < 10 then
-		newName = "00"..tostring(arrFolder[folderName])
-	elseif arrFolder[folderName] < 100 then
-		newName = "0"..tostring(arrFolder[folderName])
+	if arrFolder[tmpPath] < 10 then
+		newName = "00"..tostring(arrFolder[tmpPath])
+	elseif arrFolder[tmpPath] < 100 then
+		newName = "0"..tostring(arrFolder[tmpPath])
 	else
-		newName = tostring(arrFolder[folderName])
+		newName = tostring(arrFolder[tmpPath])
 	end
 	
-	local tmpPath = string.sub(path, 1, folderPosBegin)
+	
 	local newFullPath = tmpPath..newName..fileExt
 	return newFullPath, newName
 end
@@ -157,6 +158,7 @@ function RenameAllMessyFiles()
 	--递归列出当前文件夹下的所有文件
 	os.execute("del /F /Q allfiles.txt")
 	os.execute(" for /r %i in (*.jpg, *.png, *.jpeg, *.gif, *.bmp) do (echo %i >> allfiles.txt)")
+	
 	local fileTable = MakeTableFromFile("allfiles.txt")
 	
 	for i=1, #fileTable do
