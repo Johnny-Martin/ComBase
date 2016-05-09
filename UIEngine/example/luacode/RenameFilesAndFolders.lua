@@ -70,7 +70,7 @@ end
 local arrFolder = {}
 function GetNewFileName(path)
 	-- 匹配出jpg所在的文件夹
-	local fileExtPosBegin, fileExtPosEnd = string.find(path, "(%..+)$")
+	local fileExtPosBegin, fileExtPosEnd = string.find(path, "(%.%w+)", string.len(path) - 5)
 	if not fileExtPosBegin or not fileExtPosEnd then
 		return
 	end
