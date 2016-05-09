@@ -134,7 +134,7 @@ function RenameCurRegularFolders()
 	end
 	
 	os.execute("del /F /Q folder.txt")
-	os.execute("dir /r  > folder.txt")--列出当前文件夹下的子文件夹，不递归
+	os.execute("dir /ad/b  > folder.txt")--列出当前文件夹下的子文件夹，不递归
 	local folderTable = MakeTableFromFile("folder.txt")
 	for i=1, #folderTable do
 		local newName = GetNewFolderNum(folderTable[i])
