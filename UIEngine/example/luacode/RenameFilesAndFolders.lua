@@ -202,6 +202,25 @@ function RenameAllRegularFiles()
 	
 end
 --[[--]]
+function CopyFilesOut()
+	local function GetCurFolderPath()
+		local obj=io.popen("cd")  --如果不在交互模式下，前面可以添加local 
+		local path=obj:read("*all"):sub(1,-2)
+		return path.."\\"
+	end
+	
+	os.execute("del /F /Q folder.txt")
+	os.execute("dir /ad/b  > folder.txt")--列出当前文件夹下的子文件夹，不递归
+	local folderTable = MakeTableFromFile("folder.txt")
+	
+	local curPath = GetCurFolderPath()
+	
+	for i=1, #folderTable do
+		os.execute("xcopy /e /r /y "..curPath..folderTable[i].." "..curPath)--.." rd /s /q d:\123"
+	end
+	os.execute("del /F /Q folder.txt")
+end
+
 function OnLoadLuaFile(a, b)
 	-- RenameAllMessyFiles()
 	RenameCurMessyFolders()
