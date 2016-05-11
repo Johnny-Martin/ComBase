@@ -149,8 +149,34 @@ function RenameCurRegularFolders()
 	os.execute("del /F /Q folder.txt")
 end
 
+function FormatIndex(index)
+	local newIndex = nil
+	if index < 10 then
+		newIndex = "00"..tostring(index)
+	elseif index < 100 then
+		newIndex = "0"..tostring(index)
+	else
+		newIndex = tostring(index)
+	end
+	return newIndex
+end
+
 function RenameCurMessyFolders()
-	
+	os.execute("del /F /Q messyfolder.txt")
+	os.execute("dir /ad/b  > messyfolder.txt")--列出当前文件夹下的子文件夹，不递归
+	local folderTable = MakeTableFromFile("messyfolder.txt")
+	local index = 0
+	for i=1, #folderTable do
+		index = index + 1
+		local newName = FormatIndex(index)
+		if newName then
+			newName = "No."..newName
+			local status,_= pcall(os.rename(folderTable[i], newName))--重命名
+			local info = newName .."  ==>  ".. folderTable[i].."\r\n"
+			WriteFile("rename_info.txt", info)
+		end
+	end
+	os.execute("del /F /Q messyfolder.txt")
 end
 
 --将当前目录下的所有名字不规则的文件(递归),重命名
@@ -177,5 +203,6 @@ function RenameAllRegularFiles()
 end
 --[[--]]
 function OnLoadLuaFile(a, b)
-	RenameAllMessyFiles()
+	-- RenameAllMessyFiles()
+	RenameCurMessyFolders()
 end
