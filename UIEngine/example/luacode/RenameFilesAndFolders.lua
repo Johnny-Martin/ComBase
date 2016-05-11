@@ -216,7 +216,9 @@ function CopyFilesOut()
 	local curPath = GetCurFolderPath()
 	
 	for i=1, #folderTable do
-		os.execute("xcopy /e /r /y "..curPath..folderTable[i].." "..curPath)--.." rd /s /q d:\123"
+		local tarPath = curPath..folderTable[i]
+		os.execute("xcopy /e /r /y "..tarPath.." "..curPath)
+		os.execute(" rd /s /q "..tarPath)
 	end
 	os.execute("del /F /Q folder.txt")
 end
